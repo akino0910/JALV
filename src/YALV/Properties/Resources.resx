@@ -382,7 +382,7 @@
     <value>YALV! - Yet Another Log4Net Viewer</value>
   </data>
   <data name="SaveFolderPath_Title" xml:space="preserve">
-    <value>YALV! - Edit Favorites</value>
+    <value>JALV! - Edit Favorites</value>
   </data>
   <data name="AddFolderPath_Grid_NameColumn_Name" xml:space="preserve">
     <value>Name</value>
@@ -391,10 +391,10 @@
     <value>Path</value>
   </data>
   <data name="About_Title" xml:space="preserve">
-    <value>YALV! - About</value>
+    <value>JALV! - About</value>
   </data>
   <data name="About_Header_Text" xml:space="preserve">
-    <value>YALV! - Yet Another Log4Net Viewer</value>
+    <value>JALV! - Json Appender Log4Net Viewer</value>
   </data>
   <data name="About_AboutGroupBox_Header" xml:space="preserve">
     <value>About</value>
@@ -415,7 +415,7 @@
     <value>Filter {0}</value>
   </data>
   <data name="GlobalHelper_DISPLAY_DATETIME_FORMAT" xml:space="preserve">
-    <value>MMM d, HH:mm:ss.fff</value>
+    <value>yyyy-MM-dd HH:mm:ss.fff</value>
   </data>
   <data name="GlobalHelper_SaveFolderFile_Error_Text" xml:space="preserve">
     <value>Error saving Favorites file!
@@ -509,7 +509,7 @@
     <comment>0 - FileVersionInfo</comment>
   </data>
   <data name="About_Description" xml:space="preserve">
-    <value>YALV! is a log viewer for Log4Net that allows to compare multiple log files simultaneously.
+    <value>JALV! is a log viewer for Log4Net that allows to compare multiple log files simultaneously.
 
 MAIN FEATURES:
 - Log files merging
@@ -528,5 +528,8 @@ It is a WPF Application based on .NET Framework 4.0 and written with C# language
   </data>
   <data name="MainWindow_FilesListBoxContextMenu_SelectNone_Header" xml:space="preserve">
     <value>Clear All Files</value>
+  </data>
+  <data name="MainWindowVM_commandOpenFileExecute_JsonFilesCaption" xml:space="preserve">
+    <value>Json files</value>
   </data>
 </root>

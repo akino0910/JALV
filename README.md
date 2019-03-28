@@ -1,11 +1,12 @@
-# YALV! - Yet Another Log4Net Viewer
+# JALV! - Json Appender Log4Net Viewer
 
-YALV! is a log file viewer for Log4Net with handy features like log merging, filtering, open most recently used files, items sorting and so on. It is easy to use, it requires no configuration, it has intuitive and user-friendly interface and available in several languages. It is a WPF Application based on .NET Framework 4.0 and written in C# language.
+JALV! is a log file viewer for Log4Net with handy features like log merging, filtering, open most recently used files, items sorting and so on. It is easy to use, it requires no configuration, it has intuitive and user-friendly interface and available in several languages. It is a WPF Application based on .NET Framework 4.0 and written in C# language.
 
-![Screenshot](/doc/images/YALV-Win.png?raw=true "YALV Main Window") 
-[More Screenshots](https://github.com/LukePet/YALV/wiki/Screenshots)
+![Screenshot](/doc/images/JALV-Win.png?raw=true "JALV Main Window")
+[More Screenshots](https://github.com/stefanjarina/JALV/wiki/Screenshots)
 
 ## Main features
+
 * Log files merging into one list
 * Dynamic log events filtering
 * Dynamic show/hide log events by log level
@@ -15,7 +16,13 @@ YALV! is a log file viewer for Log4Net with handy features like log merging, fil
 * Copy log event data to clipboard
 * Open files by dragging them to the main window
 
+## Supported formats
+
+* Json Appender [log4net.Ext.Json](https://www.nuget.org/packages/log4net.Ext.Json/)
+* Xml Appender
+
 ## Localizations
+
 * English
 * French
 * German
@@ -26,8 +33,14 @@ YALV! is a log file viewer for Log4Net with handy features like log merging, fil
 * Greek
 
 ## Configuration
-YALV itself does not require any setup, but log4net must be setup in your application to write XML content in XmlLayoutSchemaLog4j layout to log files. [Read more...](https://github.com/LukePet/YALV/wiki)
+
+JALV itself does not require any setup, but log4net must be setup in your application to write XML content in XmlLayoutSchemaLog4j layout to log files. [Read more...](https://github.com/stefanjarina/JALV/wiki)
 
 ## Usage
-Download latest binaries, unzip and launch YALV.exe. That's all!
-YALV GUI language follows your Windows culture automatically, but you can override this behavior.
+
+Download latest binaries, unzip and launch JALV.exe. That's all!
+JALV GUI language follows your Windows culture automatically, but you can override this behavior.
+
+## Disclaimer
+
+JALV is a fork of JALV by Luka 

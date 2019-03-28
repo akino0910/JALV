@@ -19,7 +19,7 @@ namespace YALV.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -79,7 +79,7 @@ namespace YALV.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to YALV! is a log viewer for Log4Net that allows to compare multiple log files simultaneously.
+        ///   Looks up a localized string similar to JALV! is a log viewer for Log4Net that allows to compare multiple log files simultaneously.
         ///
         ///MAIN FEATURES:
         ///- Log files merging
@@ -91,7 +91,7 @@ namespace YALV.Properties {
         ///
         ///Log4Net config file must be setup with XmlLayoutSchemaLog4j layout; just need a few lines in your application config file to configure it to use this format (see examples on right).
         ///
-        ///It is a WPF Application based on .NET Framework 4.0 and writ [rest of string was truncated]&quot;;.
+        ///It is a WPF Application based on .NET Framework 4.0 and written with C#  [rest of string was truncated]&quot;;.
         /// </summary>
         public static string About_Description {
             get {
@@ -100,7 +100,7 @@ namespace YALV.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to YALV! - Yet Another Log4Net Viewer.
+        ///   Looks up a localized string similar to JALV! - Json Appender Log4Net Viewer.
         /// </summary>
         public static string About_Header_Text {
             get {
@@ -136,7 +136,7 @@ namespace YALV.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to YALV! - About.
+        ///   Looks up a localized string similar to JALV! - About.
         /// </summary>
         public static string About_Title {
             get {
@@ -568,7 +568,7 @@ namespace YALV.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to MMM d, HH:mm:ss.fff.
+        ///   Looks up a localized string similar to yyyy-MM-dd HH:mm:ss.fff.
         /// </summary>
         public static string GlobalHelper_DISPLAY_DATETIME_FORMAT {
             get {
@@ -1029,6 +1029,15 @@ namespace YALV.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Json files.
+        /// </summary>
+        public static string MainWindowVM_commandOpenFileExecute_JsonFilesCaption {
+            get {
+                return ResourceManager.GetString("MainWindowVM_commandOpenFileExecute_JsonFilesCaption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open Log File.
         /// </summary>
         public static string MainWindowVM_commandOpenFileExecute_Open_Log_File {
@@ -1213,7 +1222,7 @@ namespace YALV.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to YALV! - Edit Favorites.
+        ///   Looks up a localized string similar to JALV! - Edit Favorites.
         /// </summary>
         public static string SaveFolderPath_Title {
             get {
