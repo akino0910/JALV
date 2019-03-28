@@ -234,3 +234,25 @@ _Pvt_Extensions
 
 # MAC files
 .DS_Store
+
+# Common IntelliJ Platform excludes
+
+# User specific
+**/.idea
+
+# Sensitive or high-churn files
+
+# Rider
+# Rider auto-generates .iml files, and contentModel.xml
+
+*.suo
+*.user
+.vs/
+[Bb]in/
+[Oo]bj/
+_UpgradeReport_Files/
+[Pp]ackages/
+
+Thumbs.db
+Desktop.ini
+.DS_Store

@@ -315,7 +315,7 @@
     <None Include="Resources\About_DescriptionXml.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\YALV.Core\JALV.Core.csproj">
+    <ProjectReference Include="..\JALV.Core\JALV.Core.csproj">
       <Project>{d8efa045-5482-4bba-a1bf-28667d5f4635}</Project>
       <Name>JALV.Core</Name>
     </ProjectReference>
