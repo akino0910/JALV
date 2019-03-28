@@ -43,4 +43,6 @@ JALV GUI language follows your Windows culture automatically, but you can overri
 
 ## Disclaimer
 
-JALV is a fork of JALV by Luka 
+JALV is a successor of [YALV by Luca Petrini](https://github.com/LukePet/YALV) which seems to be abandoned since 2016.
+
+It was forked from version 1.4.0.0, renamed and released as a version 1.5.0.0 with JSON support.
