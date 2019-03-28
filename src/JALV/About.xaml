@@ -32,10 +32,10 @@
                 TextAlignment="Center">
                     <Hyperlink
                     Foreground="Teal"
-                    NavigateUri="https://lukepet.github.io/YALV"
+                    NavigateUri="https://github.com/stefanjarina/JALV"
                     RequestNavigate="Hyperlink_RequestNavigate"
                     TargetName="_blank">
-                        YALV! Project on GitHub
+                        JALV Project on GitHub
                     </Hyperlink>
             </TextBlock>
 
@@ -46,10 +46,10 @@
                 TextAlignment="Center">
                     <Hyperlink
                     Foreground="Teal"
-                    NavigateUri="https://about.me/lukepet"
+                    NavigateUri="https://stefanjarina.github.io/JALV/"
                     RequestNavigate="Hyperlink_RequestNavigate"
                     TargetName="_blank">
-                        An open source application developed by Luca Petrini
+                        An open source application developed by Stefan Jarina, forked from YALV by Luca Petrini
                     </Hyperlink>
             </TextBlock>
         </StackPanel>
@@ -209,14 +209,21 @@
                             Margin="0,8,0,0"
                             FontSize="12"
                             FontWeight="DemiBold"
-                            Text="Copyright © Luca Petrini 2013" />
+                            Text="Copyright © Stefan Jarina 2019" />
+                        
+                        <!-- COPYRIGHT -->
+                        <TextBlock
+                            Margin="0,8,0,0"
+                            FontSize="12"
+                            FontWeight="DemiBold"
+                            Text="Based on YALV by Luca Petrini" />
 
                         <!-- ABOUT -->
                         <TextBlock
                             Margin="0,8,0,0"
                             TextAlignment="Left"
                             TextWrapping="Wrap"
-                            Text="{x:Static Properties:Resources.About_Description}"/>
+                            ><Run Text="JALV! is a log viewer for Log4Net that allows to compare multiple log files simultaneously.&#xA;&#xA;MAIN FEATURES:&#xA;- Log files merging&#xA;- Dynamic filtering&#xA;- Dynamic show/hide log levels&#xA;- Save favorite log folders&#xA;- Open most recently used files&#xA;- Column sorting&#xA;&#xA;"/><Run Text="SUPPORTED FORMATS"/><LineBreak/><Run Text="- JSON"/><LineBreak/><Run Text="- XML"/><Run Text="&#xA;&#xA;It is a WPF Application based on .NET Framework 4.0 and written with C# language."/></TextBlock>
                     </StackPanel>
                 </GroupBox>
             </DockPanel>
