@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:JALV.Common.Converters"
     xmlns:local="clr-namespace:JALV.Common" xmlns:Properties="clr-namespace:JALV.Properties"
-    xmlns:yalv="clr-namespace:JALV" Style="{StaticResource DefaultWindowStyle}"
+    xmlns:jalv="clr-namespace:JALV" Style="{StaticResource DefaultWindowStyle}"
     Height="650"
     Width="1250"
     Title="{Binding Path=WindowTitle, Mode=OneWay}"
@@ -810,7 +810,7 @@
                                         <Binding
                                                 Mode="OneWay"
                                                 StringFormat="{x:Static Properties:Resources.MainWindow_FullDateTimeFormatWithMilliseconds}"
-                                                ConverterCulture="{x:Static yalv:MainWindow.ResolvedCulture}"
+                                                ConverterCulture="{x:Static jalv:MainWindow.ResolvedCulture}"
                                                 Path="SelectedLogItem.TimeStamp"
                                             />
                                         

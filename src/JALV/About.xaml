@@ -209,14 +209,14 @@
                             Margin="0,8,0,0"
                             FontSize="12"
                             FontWeight="DemiBold"
-                            Text="Copyright © Stefan Jarina 2019" />
+                            Text="Copyright © Luca Petrini 2013" />
                         
                         <!-- COPYRIGHT -->
                         <TextBlock
                             Margin="0,8,0,0"
                             FontSize="12"
                             FontWeight="DemiBold"
-                            Text="Based on YALV by Luca Petrini" />
+                            Text="Modifications Copyright © Stefan Jarina 2019" />
 
                         <!-- ABOUT -->
                         <TextBlock

@@ -379,10 +379,10 @@
     <value>SÉLECTION</value>
   </data>
   <data name="MainWindow_Title" xml:space="preserve">
-    <value>YALV! - Yet Another Log4Net Viewer</value>
+    <value>JALV! - Json Appender Log4Net Viewer</value>
   </data>
   <data name="SaveFolderPath_Title" xml:space="preserve">
-    <value>YALV! - Modification des Favoris</value>
+    <value>JALV! - Modification des Favoris</value>
   </data>
   <data name="AddFolderPath_Grid_NameColumn_Name" xml:space="preserve">
     <value>Nom</value>
@@ -391,10 +391,10 @@
     <value>Chemin</value>
   </data>
   <data name="About_Title" xml:space="preserve">
-    <value>YALV! - À propos de</value>
+    <value>JALV! - À propos de</value>
   </data>
   <data name="About_Header_Text" xml:space="preserve">
-    <value>YALV! - Yet Another Log4Net Viewer</value>
+    <value>JALV! - Json Appender Log4Net Viewer</value>
   </data>
   <data name="About_AboutGroupBox_Header" xml:space="preserve">
     <value>À propos de</value>
@@ -509,7 +509,7 @@
     <comment>0 - FileVersionInfo</comment>
   </data>
   <data name="About_Description" xml:space="preserve">
-    <value>YALV! est un visualiseur de journal pour Log4Net, qui permet de comparer plusieurs fichiers journals simultanément.
+    <value>JALV! est un visualiseur de journal pour Log4Net, qui permet de comparer plusieurs fichiers journals simultanément.
 
 CARACTÉRISTIQUES PRINCIPALES:
 - Fusion des fichiers journals
@@ -519,7 +519,7 @@ CARACTÉRISTIQUES PRINCIPALES:
 - Ouvrir les fichiers récents
 - Triage par colonne
 
-Il faut configurer Log4Net pour le faire utiliser l'agencement XmlLayoutSchemaLog4j. Il suffit d'ajouter quelques lignes à fichier de la configuration de vorte logiciel pour le faire produire les journals compatibles avec YALV (voir les exemples sur le droit).
+Il faut configurer Log4Net pour le faire utiliser l'agencement XmlLayoutSchemaLog4j. Il suffit d'ajouter quelques lignes à fichier de la configuration de vorte logiciel pour le faire produire les journals compatibles avec JALV (voir les exemples sur le droit).
 
 C'est le logiciel WPF fondé sur .NET Framework 4.0 et écrite en C#.</value>
   </data>

@@ -937,7 +937,7 @@ namespace JALV.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to YALV! - Yet Another Log4Net Viewer.
+        ///   Looks up a localized string similar to JALV! - Json Appender Log4Net Viewer.
         /// </summary>
         public static string MainWindow_Title {
             get {

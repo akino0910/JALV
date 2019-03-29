@@ -124,7 +124,7 @@
     <value>Авторство</value>
   </data>
   <data name="About_Header_Text" xml:space="preserve">
-    <value>YALV! - Yet Another Log4Net Viewer</value>
+    <value>JALV! - Json Appender Log4Net Viewer</value>
   </data>
   <data name="About_Log4NetConfigurationGroupbox_Header" xml:space="preserve">
     <value>Конфигурация Log4Net</value>
@@ -136,7 +136,7 @@
     <value>Пример 2:</value>
   </data>
   <data name="About_Title" xml:space="preserve">
-    <value>YALV! - О программе</value>
+    <value>JALV! - О программе</value>
   </data>
   <data name="AddFolderPathVM_commandSaveExecute_SuccessMessage" xml:space="preserve">
     <value>Список папок сохранён!</value>
@@ -487,10 +487,10 @@
     <value>ПОКАЗАТЬ/СКРЫТЬ</value>
   </data>
   <data name="MainWindow_Title" xml:space="preserve">
-    <value>YALV! - Yet Another Log4Net Viewer</value>
+    <value>JALV! - Json Appender Log4Net Viewer</value>
   </data>
   <data name="SaveFolderPath_Title" xml:space="preserve">
-    <value>YALV! - Редактирование Избранного</value>
+    <value>JALV! - Редактирование Избранного</value>
   </data>
   <data name="GlobalHelper_getTimeDelta_Negative_Text" xml:space="preserve">
     <value>-{0} с</value>
@@ -505,7 +505,7 @@
     <value>Загрузка...</value>
   </data>
   <data name="About_Description" xml:space="preserve">
-    <value>YALV! это программа для просмотра логов Log4Net, которая позволяет просматривать несколько лог-файлов одновременно.
+    <value>JALV! это программа для просмотра логов Log4Net, которая позволяет просматривать несколько лог-файлов одновременно.
 
 ОСНОВНЫЕ ВОЗМОЖНОСТИ:
 - Объединение лог-файлов

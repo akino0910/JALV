@@ -379,10 +379,10 @@
     <value>AUSWAHL</value>
   </data>
   <data name="MainWindow_Title" xml:space="preserve">
-    <value>YALV! - Yet Another Log4Net Viewer</value>
+    <value>JALV! - Json Appender Log4Net Viewer</value>
   </data>
   <data name="SaveFolderPath_Title" xml:space="preserve">
-    <value>YALV! - Verzeichnispfad speichern</value>
+    <value>JALV! - Verzeichnispfad speichern</value>
   </data>
   <data name="AddFolderPath_Grid_NameColumn_Name" xml:space="preserve">
     <value>Name</value>
@@ -391,10 +391,10 @@
     <value>Pfad</value>
   </data>
   <data name="About_Title" xml:space="preserve">
-    <value>YALV! - Info</value>
+    <value>JALV! - Info</value>
   </data>
   <data name="About_Header_Text" xml:space="preserve">
-    <value>YALV! - Yet Another Log4Net Viewer</value>
+    <value>JALV! - Json Appender Log4Net Viewer</value>
   </data>
   <data name="About_AboutGroupBox_Header" xml:space="preserve">
     <value>Programminfo</value>
@@ -509,7 +509,7 @@
     <comment>0 - FileVersionInfo</comment>
   </data>
   <data name="About_Description" xml:space="preserve">
-    <value>YALV! ist ein Betrachter für Logdateien von Log4Net, der den gleichzeitigen Vergleich mehrerer Logdateien ermöglicht.
+    <value>JALV! ist ein Betrachter für Logdateien von Log4Net, der den gleichzeitigen Vergleich mehrerer Logdateien ermöglicht.
 
 HAUPTMERKMALE:
 - Verbinden von Logdateien

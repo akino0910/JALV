@@ -379,10 +379,10 @@
     <value>选择</value>
   </data>
   <data name="MainWindow_Title" xml:space="preserve">
-    <value>YALV! - Yet Another Log4Net Viewer</value>
+    <value>JALV! - Json Appender Log4Net Viewer</value>
   </data>
   <data name="SaveFolderPath_Title" xml:space="preserve">
-    <value>YALV! - 编辑收藏夹</value>
+    <value>JALV! - 编辑收藏夹</value>
   </data>
   <data name="AddFolderPath_Grid_NameColumn_Name" xml:space="preserve">
     <value>名称</value>
@@ -391,10 +391,10 @@
     <value>路径</value>
   </data>
   <data name="About_Title" xml:space="preserve">
-    <value>YALV! - 关于</value>
+    <value>JALV! - 关于</value>
   </data>
   <data name="About_Header_Text" xml:space="preserve">
-    <value>YALV! - Yet Another Log4Net Viewer</value>
+    <value>JALV! - Json Appender Log4Net Viewer</value>
   </data>
   <data name="About_AboutGroupBox_Header" xml:space="preserve">
     <value>关于</value>
@@ -509,7 +509,7 @@
     <comment>0 - 文件版本信息</comment>
   </data>
   <data name="About_Description" xml:space="preserve">
-    <value>YALV! 是一款用于 Log4Net 的日志浏览器，可以同时比对多个日志文件。
+    <value>JALV! 是一款用于 Log4Net 的日志浏览器，可以同时比对多个日志文件。
 
 主要功能:
 - 日志文件合并

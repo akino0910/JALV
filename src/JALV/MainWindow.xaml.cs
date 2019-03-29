@@ -6,11 +6,12 @@
  * Log4Net config file must be setup with XmlLayoutSchemaLog4j layout.
  * It is a WPF Application based on .NET Framework 4.0 and written with C# language.
  *
- * An open source application developed by Luca Petrini - http://www.linkedin.com/in/lucapetrini
+ * An open source application mainained by Stefan Jarina - http://www.linkedin.com/in/stefanjarina
+ * Forked from YALV developed by Luca Petrini - http://www.linkedin.com/in/lucapetrini
  * 
  * Copyright: (c) 2012 Luca Petrini
+ * Modifications Copyright: (c) 2019 Stefan Jarina
  * 
- * JALV! is a free software distributed on CodePlex: http://yalv.codeplex.com/ under the Microsoft Public License (Ms-PL)
  */
 #endregion
 

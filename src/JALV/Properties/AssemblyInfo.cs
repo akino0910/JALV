@@ -10,7 +10,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("JALV")]
-[assembly: AssemblyCopyright("Copyright ©  Luca Petrini 2013")]
+[assembly: AssemblyCopyright("Modifications Copyright © Stefan Jarina 2019 - Copyright © Luca Petrini 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
