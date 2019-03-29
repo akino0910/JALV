@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="en-us">
   <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-137248709-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-137248709-1');
+    </script>
+
     <meta charset="UTF-8">
     <title>JALV - Json Appender LOG4NET Viewer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,81 +24,94 @@
       <h1 class="project-name">JALV</h1>
       <h2 class="project-tagline">JALV! - Json Appender LOG4NET Viewer</h2>
       <a href="https://github.com/stefanjarina/JALV" class="btn">View on GitHub</a>
-      <a href="https://github.com/stefanjarina/JALV/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/stefanjarina/JALV/tarball/master" class="btn">Download .tar.gz</a>
+      <a href="https://github.com/stefanjarina/JALV/releases" class="btn">Grab latest version</a>
+      <a href="https://github.com/stefanjarina/JALV/zipball/master" class="btn">Source .zip</a>
+      <a href="https://github.com/stefanjarina/JALV/tarball/master" class="btn">Source .tar.gz</a>
     </section>
 
     <section class="main-content">
       <h2>
-<a id="project-description" class="anchor" href="#project-description" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Project Description</h2>
+        <a id="project-description" class="anchor" href="#project-description" aria-hidden="true">
+          <span aria-hidden="true" class="octicon octicon-link"></span>
+        </a>
+        Project Description
+      </h2>
 
-<p>JALV! is a log file viewer for Log4Net with handy features like log merging, filtering, open most recently used files, items sorting and so on. It is easy to use, it requires no configuration, it has intuitive and user-friendly interface and available in several languages. It is a WPF Application based on .NET Framework 4.0 and written in C# language.</p>
+      <p>JALV! is a log file viewer for Log4Net with handy features like log merging, filtering, open most recently used files, items sorting and so on. It is easy to use, it requires no configuration, it has intuitive and user-friendly interface and available in several languages.
+        It is a WPF Application based on .NET Framework 4.0 and written in C# language.</p>
 
-<p><img src="https://raw.githubusercontent.com/stefanjarina/JALV/master/doc/images/JALV-Win.png" alt="JALV Main Window">
-<a href="https://github.com/stefanjarina/JALV/wiki/Screenshots">More Screenshots</a></p>
+      <p><img src="https://raw.githubusercontent.com/stefanjarina/JALV/master/doc/images/JALV-Win.png" alt="JALV Main Window"></p>
 
-<h2>
-<a id="main-features" class="anchor" href="#main-features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Main features</h2>
+      <h2>
+        <a id="main-features" class="anchor" href="#main-features" aria-hidden="true">
+          <span aria-hidden="true" class="octicon octicon-link"></span>
+        </a>
+        Main features
+      </h2>
 
-<ul>
-<li>Log files merging into one list</li>
-<li>Dynamic log events filtering</li>
-<li>Dynamic show/hide log events by log level</li>
-<li>Favorites log folders list</li>
-<li>Open most recently used files</li>
-<li>Sort and reorder columns</li>
-<li>Copy log event data to clipboard</li>
-<li>Open files by dragging them to the main window</li>
-</ul>
+      <ul>
+      <li>Log files merging into one list</li>
+      <li>Dynamic log events filtering</li>
+      <li>Dynamic show/hide log events by log level</li>
+      <li>Favorites log folders list</li>
+      <li>Open most recently used files</li>
+      <li>Sort and reorder columns</li>
+      <li>Copy log event data to clipboard</li>
+      <li>Open files by dragging them to the main window</li>
+      </ul>
 
-## Supported formats
+      <h2>
+        <a id="main-features" class="anchor" href="#supported-formats" aria-hidden="true">
+          <span aria-hidden="true" class="octicon octicon-link"></span>
+        </a>
+        Supported formats
+      </h2>
+      
+      <ul>
+        <li><strong>JSON</strong> by Json Appender <a href="https://www.nuget.org/packages/log4net.Ext.Json/">'log4net.Ext.Json'</a></li>
+        <li><strong>XML</strong>XML by LOG4NET default XML Appender</li>
+      </ul>
 
-* Json Appender <a href="https://www.nuget.org/packages/log4net.Ext.Json/">'log4net.Ext.Json'</a>
-* Xml Appender
+      <h2>
+        <a id="localizations" class="anchor" href="#localizations" aria-hidden="true">
+          <span aria-hidden="true" class="octicon octicon-link"></span>
+        </a>
+        Localizations
+      </h2>
 
-<h2>
-<a id="localizations" class="anchor" href="#localizations" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Localizations</h2>
+      <ul>
+      <li>English</li>
+      <li>French</li>
+      <li>German</li>
+      <li>Italian</li>
+      <li>Russian</li>
+      <li>Japanese</li>
+      <li>Chinese</li>
+      <li>Greek</li>
+      </ul>
 
-<ul>
-<li>English</li>
-<li>French</li>
-<li>German</li>
-<li>Italian</li>
-<li>Russian</li>
-<li>Japanese</li>
-<li>Chinese</li>
-<li>Greek</li>
-</ul>
+      <h2>
+        <a id="configuration" class="anchor" href="#configuration" aria-hidden="true">
+          <span aria-hidden="true" class="octicon octicon-link"></span>
+        </a>
+        Configuration
+      </h2>
 
-<h2>
-<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Configuration</h2>
+      <p>JALV itself does not require any setup, but log4net must be setup in your application to write XML content in XmlLayoutSchemaLog4j layout to log files. <a href="https://github.com/stefanjarina/JALV/wiki">Read more...</a></p>
 
-<p>JALV itself does not require any setup, but log4net must be setup in your application to write XML content in XmlLayoutSchemaLog4j layout to log files. <a href="https://github.com/stefanjarina/JALV/wiki">Read more...</a></p>
+      <h2>
+      <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
 
-<h2>
-<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
-
-<p>Download latest binaries, unzip and launch JALV.exe. That's all!
-JALV GUI language follows your Windows culture automatically, but you can override this behavior.</p>
+      <p><a href="https://github.com/stefanjarina/JALV/releases">Download</a> latest binaries, unzip and launch JALV.exe. That's all!
+      JALV GUI language follows your Windows culture automatically, but you can override this behavior.</p>
 
       <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/stefanjarina/JALV">JALV</a> is maintained by <a href="https://github.com/stefanjarina">Stefan Jarina</a>.</span>
-        <span class="site-footer-owner">JALV is a successor of <a href="https://github.com/LukePet/YALV">YALV</a> by Luca Petrini.</span>
+        <span class="site-footer-owner"><a href="https://github.com/stefanjarina/JALV">JALV</a> is maintained by <a href="https://www.linkedin.com/in/stefanjarina/">Stefan Jarina</a>.</span>
+        <span class="site-footer-credits">JALV is a successor to <a href="https://github.com/LukePet/YALV">YALV</a> by Luca Petrini.</span>
         <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
 
     </section>
-
-            <script type="text/javascript">
-            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-          </script>
-          <script type="text/javascript">
-            try {
-              var pageTracker = _gat._getTracker("UA-3658438-4");
-            pageTracker._trackPageview();
-            } catch(err) {}
-          </script>
 
   </body>
 </html>
