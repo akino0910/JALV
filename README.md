@@ -1,5 +1,8 @@
 # JALV! - Json Appender Log4Net Viewer
 
+**MASTER:** [![Build status](https://ci.appveyor.com/api/projects/status/pv3y4thnj0qau96b/branch/master?svg=true)](https://ci.appveyor.com/project/stefanjarina/jalv/branch/master)
+ **DEVELOP:** [![Build status](https://ci.appveyor.com/api/projects/status/pv3y4thnj0qau96b/branch/develop?svg=true)](https://ci.appveyor.com/project/stefanjarina/jalv/branch/develop)
+
 JALV! is a log file viewer for Log4Net with handy features like log merging, filtering, open most recently used files, items sorting and so on. It is easy to use, it requires no configuration, it has intuitive and user-friendly interface and available in several languages. It is a WPF Application based on .NET Framework 4.0 and written in C# language.
 
 ![Screenshot](/doc/images/JALV-Win.png?raw=true "JALV Main Window")
