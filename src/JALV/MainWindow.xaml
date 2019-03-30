@@ -528,7 +528,7 @@
                             ToolTip="{x:Static Properties:Resources.MainWindow_MergeFile_Tooltip}"
                             VerticalAlignment="Stretch">
                             <Image
-                                Source="/Resources/Icons/selection.png" />
+                                Source="/Resources/icons/selection.png"/>
                         </ToggleButton>
                         <ComboBox
                             Height="22"
