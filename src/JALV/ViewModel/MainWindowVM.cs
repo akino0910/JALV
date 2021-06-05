@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Shell;
@@ -17,6 +18,7 @@ using JALV.Properties;
 
 namespace JALV.ViewModel
 {
+    [SupportedOSPlatform("windows")]
     public class MainWindowVM
         : BindableObject
     {

@@ -18,6 +18,7 @@
 using System;
 using System.Configuration;
 using System.Globalization;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -30,6 +31,7 @@ namespace JALV
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public partial class MainWindow : Window, IWinSimple
     {
         public MainWindow(string[] args)

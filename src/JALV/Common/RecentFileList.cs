@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,6 +15,7 @@ namespace JALV.Common
     /// <summary>
     /// Refs: http://www.codeproject.com/Articles/23731/RecentFileList-a-WPF-MRU
     /// </summary>
+    [SupportedOSPlatform("windows")]
     public class RecentFileList : Separator
     {
         public interface IPersist
@@ -418,6 +420,7 @@ namespace JALV.Common
             }
 
             string Key(int i) { return i.ToString("00"); }
+
 
             public List<string> RecentFiles(int max)
             {
