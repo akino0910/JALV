@@ -19,7 +19,7 @@ namespace JALV.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -91,7 +91,7 @@ namespace JALV.Properties {
         ///
         ///Log4Net config file must be setup with XmlLayoutSchemaLog4j layout; just need a few lines in your application config file to configure it to use this format (see examples on right).
         ///
-        ///It is a WPF Application based on .NET Framework 4.0 and writ [rest of string was truncated]&quot;;.
+        ///It is a WPF Application based on .NET Framework 4.0 and written with C#  [rest of string was truncated]&quot;;.
         /// </summary>
         public static string About_Description {
             get {
