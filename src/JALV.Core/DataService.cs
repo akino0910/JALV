@@ -22,7 +22,7 @@ namespace JALV.Core
                     streamWriter = new StreamWriter(fileStream);
                     foreach (PathItem item in folders)
                     {
-                        string line = String.Format("<folder name=\"{0}\" path=\"{1}\" />", item.Name, item.Path);
+                        var line = $"<folder name=\"{item.Name}\" path=\"{item.Path}\" />";
                         streamWriter.WriteLine(line);
                     }
                     streamWriter.Close();
@@ -38,10 +38,8 @@ namespace JALV.Core
             }
             finally
             {
-                if (streamWriter != null)
-                    streamWriter.Close();
-                if (fileStream != null)
-                    fileStream.Close();
+                streamWriter?.Close();
+                fileStream?.Close();
             }
            
         }
@@ -58,7 +56,7 @@ namespace JALV.Core
 
                 fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 streamReader = new StreamReader(fileStream, true);
-                string sBuffer = String.Format("<root>{0}</root>", streamReader.ReadToEnd());
+                string sBuffer = $"<root>{streamReader.ReadToEnd()}</root>";
                 streamReader.Close();
                 streamReader = null;
                 fileStream.Close();
@@ -85,10 +83,8 @@ namespace JALV.Core
             }
             finally
             {
-                if (streamReader != null)
-                    streamReader.Close();
-                if (fileStream != null)
-                    fileStream.Close();
+                streamReader?.Close();
+                fileStream?.Close();
             }
         }
 

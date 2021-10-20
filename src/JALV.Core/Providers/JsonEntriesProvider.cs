@@ -28,7 +28,9 @@ namespace JALV.Core.Providers
                 string[] dateFormats = { "MM/dd/yyyy HH:mm:ss",
                     "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd HH:mm:ssZ",
                     "yyyy-MM-ddTHH:mm:ss.fffZ", "yyyy-MM-dd HH:mm:ss.fffZ",
-                    "yyyy-MM-ddTHH:mm:ss,fffZ", "yyyy-MM-dd HH:mm:ss,fffZ"  };
+                    "yyyy-MM-ddTHH:mm:ss,fffZ", "yyyy-MM-dd HH:mm:ss,fffZ",
+                    "yyyy-MM-dd HH:mm:ss.fff", "yyyy-MM-dd HH:mm:ss,fff"
+                };
                 var dateString = lineObject.SelectToken("date")?.Value<String>() ?? "";
                 DateTime timestamp;
                 try
@@ -51,6 +53,7 @@ namespace JALV.Core.Providers
                     RequestId = lineObject.SelectToken("requestId")?.Value<String>() ?? "",
                     Thread = lineObject.SelectToken("thread")?.Value<String>() ?? "",
                     UserName = lineObject.SelectToken("user")?.Value<String>() ?? "",
+                    MachineName = lineObject.SelectToken("machine")?.Value<String>() ?? "",
                     HostName = lineObject.SelectToken("hostname")?.Value<String>() ?? "",
                     Throwable = lineObject.SelectToken("exception")?.Value<String>() ?? "",
                     Class = lineObject.SelectToken("logger")?.Value<String>() ?? "",
