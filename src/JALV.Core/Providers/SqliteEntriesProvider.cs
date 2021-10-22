@@ -7,8 +7,8 @@ namespace JALV.Core.Providers
     {
         protected override IDbConnection CreateConnection(string dataSource)
         {
-            SQLiteConnectionStringBuilder sb = new SQLiteConnectionStringBuilder { DataSource = dataSource, FailIfMissing = true };
-            string connectionString = sb.ConnectionString;
+            var sb = new SQLiteConnectionStringBuilder { DataSource = dataSource, FailIfMissing = true };
+            var connectionString = sb.ConnectionString;
             return new SQLiteConnection(connectionString);
         }
     }

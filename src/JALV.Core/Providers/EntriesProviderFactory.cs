@@ -22,7 +22,7 @@ namespace JALV.Core.Providers
                     return new MsSqlServerEntriesProvider();
 
                 default:
-                    var message = String.Format((string) "Type {0} not supported", (object) type);
+                    var message = $"Type {type} not supported";
                     throw new NotImplementedException(message);
             }
         }

@@ -12,17 +12,17 @@ namespace JALV.Common
         {
             switch (RenderCapability.Tier >> 16)
             {
-                case 2:     // mostly hardware
-                    DesiredFrameRate = new int?(30);
+                case 2: // mostly hardware
+                    DesiredFrameRate = 30;
                     break;
 
-                case 1:     // partially hardware
-                    DesiredFrameRate = new int?(20);
+                case 1: // partially hardware
+                    DesiredFrameRate = 20;
                     break;
 
-                case 0:     // software
+                case 0: // software
                 default:
-                    DesiredFrameRate = new int?(10);
+                    DesiredFrameRate = 10;
                     break;
             }
         }

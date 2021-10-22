@@ -1,17 +1,16 @@
+using System;
+using System.Diagnostics;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Shapes;
+
 namespace JALV.Common
 {
     #region #using Directives
-
-    using System;
-    using System.Diagnostics;
-    using System.Windows;
-    using System.Windows.Controls;
-    using System.Windows.Data;
-    using System.Windows.Input;
-    using System.Windows.Media;
-    using System.Windows.Media.Animation;
-    using System.Windows.Shapes;
-
     //using Progress;
 
     #endregion
@@ -24,42 +23,49 @@ namespace JALV.Common
         /// <summary>
         /// Default animation framerate
         /// </summary>
-        public static int? FRAMERATE = 30;
+        public static int? Framerate = 30;
 
         #region Attached Properties
 
-        public static readonly DependencyProperty AddMarginsProperty = DependencyProperty.RegisterAttached("AddMargins", typeof(bool),
-                                                                                                           typeof(BusyIndicatorBehavior),
-                                                                                                           new UIPropertyMetadata(false));
+        public static readonly DependencyProperty AddMarginsProperty = DependencyProperty.RegisterAttached("AddMargins",
+            typeof(bool),
+            typeof(BusyIndicatorBehavior),
+            new UIPropertyMetadata(false));
 
 
-        public static readonly DependencyProperty BusyStateProperty = DependencyProperty.RegisterAttached("BusyState", typeof(bool),
-                                                                                                          typeof(BusyIndicatorBehavior),
-                                                                                                          new UIPropertyMetadata(false, OnBusyStateChanged));
+        public static readonly DependencyProperty BusyStateProperty = DependencyProperty.RegisterAttached("BusyState",
+            typeof(bool),
+            typeof(BusyIndicatorBehavior),
+            new UIPropertyMetadata(false, OnBusyStateChanged));
 
-        public static readonly DependencyProperty DimBackgroundProperty = DependencyProperty.RegisterAttached("DimBackground", typeof(bool),
-                                                                                                              typeof(BusyIndicatorBehavior),
-                                                                                                              new UIPropertyMetadata(true,
-                                                                                                                                     OnDimBackgroundChanged));
+        public static readonly DependencyProperty DimBackgroundProperty = DependencyProperty.RegisterAttached(
+            "DimBackground", typeof(bool),
+            typeof(BusyIndicatorBehavior),
+            new UIPropertyMetadata(true,
+                OnDimBackgroundChanged));
 
-        public static readonly DependencyProperty DimmerBrushProperty = DependencyProperty.RegisterAttached("DimmerBrush", typeof(Brush),
-                                                                                                            typeof(BusyIndicatorBehavior),
-                                                                                                            new UIPropertyMetadata(Brushes.Black));
+        public static readonly DependencyProperty DimmerBrushProperty = DependencyProperty.RegisterAttached(
+            "DimmerBrush", typeof(Brush),
+            typeof(BusyIndicatorBehavior),
+            new UIPropertyMetadata(Brushes.Black));
 
-        public static readonly DependencyProperty DimmerOpacityProperty = DependencyProperty.RegisterAttached("DimmerOpacity", typeof(double),
-                                                                                                              typeof(BusyIndicatorBehavior),
-                                                                                                              new UIPropertyMetadata(0.35));
+        public static readonly DependencyProperty DimmerOpacityProperty = DependencyProperty.RegisterAttached(
+            "DimmerOpacity", typeof(double),
+            typeof(BusyIndicatorBehavior),
+            new UIPropertyMetadata(0.35));
 
-        public static readonly DependencyProperty DimTransitionDurationProperty = DependencyProperty.RegisterAttached("DimTransitionDuration",
-                                                                                                                      typeof(Duration),
-                                                                                                                      typeof(BusyIndicatorBehavior),
-                                                                                                                      new UIPropertyMetadata(
-                                                                                                                        new Duration(TimeSpan.FromSeconds(0.0))));
+        public static readonly DependencyProperty DimTransitionDurationProperty = DependencyProperty.RegisterAttached(
+            "DimTransitionDuration",
+            typeof(Duration),
+            typeof(BusyIndicatorBehavior),
+            new UIPropertyMetadata(
+                new Duration(TimeSpan.FromSeconds(0.0))));
 
 
-        public static readonly DependencyProperty TargetVisualProperty = DependencyProperty.RegisterAttached("TargetVisual", typeof(UIElement),
-                                                                                                             typeof(BusyIndicatorBehavior),
-                                                                                                             new UIPropertyMetadata(null));
+        public static readonly DependencyProperty TargetVisualProperty = DependencyProperty.RegisterAttached(
+            "TargetVisual", typeof(UIElement),
+            typeof(BusyIndicatorBehavior),
+            new UIPropertyMetadata(null));
 
         public static double GetDimmerOpacity(DependencyObject obj)
         {
@@ -137,8 +143,8 @@ namespace JALV.Common
 
         private static void OnDimBackgroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            bool shouldDimBackground = (bool)e.NewValue;
-            bool wasDimmingBackground = (bool)e.OldValue;
+            var shouldDimBackground = (bool)e.NewValue;
+            var wasDimmingBackground = (bool)e.OldValue;
 
             if (shouldDimBackground == wasDimmingBackground)
             {
@@ -150,7 +156,7 @@ namespace JALV.Common
                 return;
             }
 
-            var hostGridObject = (GetTargetVisual(d) ?? d);
+            var hostGridObject = GetTargetVisual(d) ?? d;
             Debug.Assert(hostGridObject != null);
 
             var hostGrid = hostGridObject as Grid;
@@ -164,7 +170,7 @@ namespace JALV.Common
 
                     if (dimmer != null)
                     {
-                        dimmer.Visibility = (shouldDimBackground ? Visibility.Visible : Visibility.Collapsed);
+                        dimmer.Visibility = shouldDimBackground ? Visibility.Visible : Visibility.Collapsed;
                     }
 
                     if (shouldDimBackground)
@@ -174,28 +180,21 @@ namespace JALV.Common
 
                         //InputManager.Current.PreProcessInput += OnPreProcessInput;
                     }
-                    else
-                    {
-                        //grid.Cursor = Cursors.Arrow;
-                        //grid.ForceCursor = false;
-
-                        //InputManager.Current.PreProcessInput -= OnPreProcessInput;
-                    }
                 }
             }
         }
 
         private static void OnBusyStateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            bool isBusy = (bool)e.NewValue;
-            bool wasBusy = (bool)e.OldValue;
+            var isBusy = (bool)e.NewValue;
+            var wasBusy = (bool)e.OldValue;
 
             if (isBusy == wasBusy)
             {
                 return;
             }
 
-            var hostGridObject = (GetTargetVisual(d) ?? d);
+            var hostGridObject = GetTargetVisual(d) ?? d;
             Debug.Assert(hostGridObject != null);
 
             var hostGrid = hostGridObject as Grid;
@@ -211,12 +210,12 @@ namespace JALV.Common
             {
                 Debug.Assert(LogicalTreeHelper.FindLogicalNode(hostGrid, "BusyIndicator") == null);
 
-                bool dimBackground = GetDimBackground(d);
+                var dimBackground = GetDimBackground(d);
                 var grid = new Grid
-                            {
-                                Name = "BusyIndicator",
-                                Opacity = 0.0
-                            };
+                {
+                    Name = "BusyIndicator",
+                    Opacity = 0.0
+                };
                 if (dimBackground)
                 {
                     //grid.Cursor = Cursors.Wait;
@@ -224,36 +223,37 @@ namespace JALV.Common
 
                     //InputManager.Current.PreProcessInput += OnPreProcessInput;
                 }
+
                 grid.SetBinding(FrameworkElement.WidthProperty, new Binding("ActualWidth")
-                                                                    {
-                                                                        Source = hostGrid
-                                                                    });
+                {
+                    Source = hostGrid
+                });
                 grid.SetBinding(FrameworkElement.HeightProperty, new Binding("ActualHeight")
-                                                                    {
-                                                                        Source = hostGrid
-                                                                    });
-                for (int i = 1; i <= 3; ++i)
+                {
+                    Source = hostGrid
+                });
+                for (var i = 1; i <= 3; ++i)
                 {
                     grid.ColumnDefinitions.Add(new ColumnDefinition
-                                                {
-                                                    Width = new GridLength(1, GridUnitType.Star)
-                                                });
+                    {
+                        Width = new GridLength(1, GridUnitType.Star)
+                    });
                     grid.RowDefinitions.Add(new RowDefinition
-                                                {
-                                                    Height = new GridLength(1, GridUnitType.Star)
-                                                });
+                    {
+                        Height = new GridLength(1, GridUnitType.Star)
+                    });
                 }
 
                 var viewbox = new Viewbox
-                                {
-                                    Width = 120.0,
-                                    Height = 120.0,
-                                    VerticalAlignment = VerticalAlignment.Center,
-                                    HorizontalAlignment = HorizontalAlignment.Center,
-                                    Stretch = Stretch.Uniform,
-                                    StretchDirection = StretchDirection.Both,
-                                    Child = new CircularProgressBar()
-                                };
+                {
+                    Width = 120.0,
+                    Height = 120.0,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Stretch = Stretch.Uniform,
+                    StretchDirection = StretchDirection.Both,
+                    Child = new CircularProgressBar()
+                };
                 grid.SetValue(Panel.ZIndexProperty, 1000);
                 grid.SetValue(Grid.RowSpanProperty, Math.Max(1, hostGrid.RowDefinitions.Count));
                 grid.SetValue(Grid.ColumnSpanProperty, Math.Max(1, hostGrid.ColumnDefinitions.Count));
@@ -267,15 +267,16 @@ namespace JALV.Common
                     viewbox.SetValue(Grid.RowSpanProperty, 3);
                     viewbox.SetValue(Grid.ColumnSpanProperty, 3);
                 }
+
                 viewbox.SetValue(Panel.ZIndexProperty, 1);
 
                 var dimmer = new Rectangle
-                                {
-                                    Name = "Dimmer",
-                                    Opacity = GetDimmerOpacity(d),
-                                    Fill = GetDimmerBrush(d),
-                                    Visibility = (dimBackground ? Visibility.Visible : Visibility.Collapsed)
-                                };
+                {
+                    Name = "Dimmer",
+                    Opacity = GetDimmerOpacity(d),
+                    Fill = GetDimmerBrush(d),
+                    Visibility = dimBackground ? Visibility.Visible : Visibility.Collapsed
+                };
                 dimmer.SetValue(Grid.RowSpanProperty, 3);
                 dimmer.SetValue(Grid.ColumnSpanProperty, 3);
                 dimmer.SetValue(Panel.ZIndexProperty, 0);
@@ -283,8 +284,8 @@ namespace JALV.Common
 
                 grid.Children.Add(viewbox);
 
-                DoubleAnimation animation = new DoubleAnimation(1.0, GetDimTransitionDuration(d));
-                Timeline.SetDesiredFrameRate(animation, FRAMERATE);
+                var animation = new DoubleAnimation(1.0, GetDimTransitionDuration(d));
+                Timeline.SetDesiredFrameRate(animation, Framerate);
                 grid.BeginAnimation(UIElement.OpacityProperty, animation);
 
                 hostGrid.Children.Add(grid);
@@ -300,7 +301,7 @@ namespace JALV.Common
                     grid.Name = string.Empty;
 
                     var fadeOutAnimation = new DoubleAnimation(0.0, GetDimTransitionDuration(d));
-                    Timeline.SetDesiredFrameRate(fadeOutAnimation, FRAMERATE);
+                    Timeline.SetDesiredFrameRate(fadeOutAnimation, Framerate);
                     fadeOutAnimation.Completed += (sender, args) => OnFadeOutAnimationCompleted(d, hostGrid, grid);
                     grid.BeginAnimation(UIElement.OpacityProperty, fadeOutAnimation);
                 }
@@ -317,7 +318,7 @@ namespace JALV.Common
 
         private static void OnFadeOutAnimationCompleted(DependencyObject d, Panel hostGrid, UIElement busyIndicator)
         {
-            bool dimBackground = GetDimBackground(d);
+            var dimBackground = GetDimBackground(d);
 
             hostGrid.Children.Remove(busyIndicator);
 

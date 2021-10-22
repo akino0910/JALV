@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -12,20 +11,20 @@ using JALV.Properties;
 
 namespace JALV.ViewModel
 {
-    public class AddFolderPathVM
+    public class AddFolderPathVm
         : BindableObject
     {
-        public AddFolderPathVM(IWinSimple win)
+        public AddFolderPathVm(IWinSimple win)
         {
             _callingWin = win;
 
-            CommandExit = new CommandRelay(commandExitExecute, p => true);
-            CommandSave = new CommandRelay(commandSaveExecute, commandSaveCanExecute);
-            CommandAdd = new CommandRelay(commandAddExecute, commandAddCanExecute);
-            CommandRemove = new CommandRelay(commandRemoveExecute, commandRemoveCanExecute);
-            CommandSelectFolder = new CommandRelay(commandSelectFolderExecute, p => true);
+            CommandExit = new CommandRelay(CommandExitExecute, p => true);
+            CommandSave = new CommandRelay(CommandSaveExecute, CommandSaveCanExecute);
+            CommandAdd = new CommandRelay(CommandAddExecute, CommandAddCanExecute);
+            CommandRemove = new CommandRelay(CommandRemoveExecute, CommandRemoveCanExecute);
+            CommandSelectFolder = new CommandRelay(CommandSelectFolderExecute, p => true);
 
-            string path = Constants.FOLDERS_FILE_PATH;
+            var path = Constants.FoldersFilePath;
             IList<PathItem> folders = null;
             ;
             try
@@ -34,13 +33,15 @@ namespace JALV.ViewModel
             }
             catch (Exception ex)
             {
-                string message = String.Format((string) Resources.GlobalHelper_ParseFolderFile_Error_Text, path, ex.Message);
-                MessageBox.Show(message, Resources.GlobalHelper_ParseFolderFile_Error_Title, MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                
+                var message = string.Format(Resources.GlobalHelper_ParseFolderFile_Error_Text, path, ex.Message);
+                MessageBox.Show(message, Resources.GlobalHelper_ParseFolderFile_Error_Title, MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation);
             }
-           
-            
-            _pathList = folders != null ? new ObservableCollection<PathItem>(folders) : new ObservableCollection<PathItem>();
+
+
+            _pathList = folders != null
+                ? new ObservableCollection<PathItem>(folders)
+                : new ObservableCollection<PathItem>();
 
             ListChanged = false;
         }
@@ -72,93 +73,96 @@ namespace JALV.ViewModel
         /// </summary>
         public ICommandAncestor CommandSelectFolder { get; protected set; }
 
-        protected virtual object commandExitExecute(object parameter)
+        protected virtual object CommandExitExecute(object parameter)
         {
             _callingWin.Close();
             return null;
         }
 
-        protected virtual object commandSaveExecute(object parameter)
+        protected virtual object CommandSaveExecute(object parameter)
         {
             if (PathList != null)
             {
                 //Clear item with empty information
-                for (int i = PathList.Count - 1; i >= 0; i--)
+                for (var i = PathList.Count - 1; i >= 0; i--)
                 {
-                    PathItem item = PathList[i];
-                    if (String.IsNullOrWhiteSpace(item.Name) || String.IsNullOrWhiteSpace(item.Path))
+                    var item = PathList[i];
+                    if (string.IsNullOrWhiteSpace(item.Name) || string.IsNullOrWhiteSpace(item.Path))
                     {
                         PathList.RemoveAt(i);
                         continue;
                     }
+
                     item.Path = item.Path.TrimEnd('\\');
                 }
 
                 //Order list to save
                 IList<PathItem> orderList = (from p in PathList
-                                             orderby p.Name
-                                             select p).ToList<PathItem>();
+                    orderby p.Name
+                    select p).ToList();
                 PathList.Clear();
                 foreach (var item in orderList)
                     PathList.Add(item);
 
                 //Save XML File
-                string path = Constants.FOLDERS_FILE_PATH;
-                
+                var path = Constants.FoldersFilePath;
+
                 try
                 {
                     DataService.SaveFolderFile(orderList, path);
-                    MessageBox.Show(Resources.AddFolderPathVM_commandSaveExecute_SuccessMessage, Resources.AddFolderPathVM_commandSaveExecute_SuccessTitle, MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(Resources.AddFolderPathVM_commandSaveExecute_SuccessMessage,
+                        Resources.AddFolderPathVM_commandSaveExecute_SuccessTitle, MessageBoxButton.OK,
+                        MessageBoxImage.Information);
                     ListChanged = true;
                 }
                 catch (Exception ex)
                 {
-                    string message = String.Format((string)Resources.GlobalHelper_SaveFolderFile_Error_Text, path, ex.Message);
-                    MessageBox.Show(message, Resources.GlobalHelper_SaveFolderFile_Error_Title, MessageBoxButton.OK, MessageBoxImage.Exclamation);        
+                    var message = string.Format(Resources.GlobalHelper_SaveFolderFile_Error_Text, path, ex.Message);
+                    MessageBox.Show(message, Resources.GlobalHelper_SaveFolderFile_Error_Title, MessageBoxButton.OK,
+                        MessageBoxImage.Exclamation);
                 }
-
             }
+
             return null;
         }
 
-        protected virtual bool commandSaveCanExecute(object parameter)
+        protected virtual bool CommandSaveCanExecute(object parameter)
         {
             return true;
         }
 
-        protected virtual object commandAddExecute(object parameter)
+        protected virtual object CommandAddExecute(object parameter)
         {
             var newItem = new PathItem();
-            if (PathList != null)
-                PathList.Add(newItem);
+            PathList?.Add(newItem);
             return null;
         }
 
-        protected virtual bool commandAddCanExecute(object parameter)
+        protected virtual bool CommandAddCanExecute(object parameter)
         {
             return true;
         }
 
-        protected virtual object commandRemoveExecute(object parameter)
+        protected virtual object CommandRemoveExecute(object parameter)
         {
-            if (PathList != null)
-                PathList.Remove(SelectedPath);
+            PathList?.Remove(SelectedPath);
             return null;
         }
 
-        protected virtual bool commandRemoveCanExecute(object parameter)
+        protected virtual bool CommandRemoveCanExecute(object parameter)
         {
             return SelectedPath != null;
         }
 
-        protected virtual object commandSelectFolderExecute(object parameter)
+        protected virtual object CommandSelectFolderExecute(object parameter)
         {
-            using (System.Windows.Forms.FolderBrowserDialog dlg = new System.Windows.Forms.FolderBrowserDialog())
+            using (var dlg = new System.Windows.Forms.FolderBrowserDialog())
             {
                 dlg.Description = "Select Log Folder";
                 if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK && SelectedPath != null)
                     SelectedPath.Path = dlg.SelectedPath;
             }
+
             return null;
         }
 
@@ -176,37 +180,39 @@ namespace JALV.ViewModel
         /// </summary>
         public ObservableCollection<PathItem> PathList
         {
-            get { return _pathList; }
+            get => _pathList;
             set
             {
                 _pathList = value;
-                RaisePropertyChanged(PROP_PathList);
+                RaisePropertyChanged(PropPathList);
             }
         }
+
         private ObservableCollection<PathItem> _pathList;
-        public static string PROP_PathList = "PathList";
+        public static string PropPathList = "PathList";
 
         /// <summary>
         /// SelectedPath Property
         /// </summary>
         public PathItem SelectedPath
         {
-            get { return _selectedPath; }
+            get => _selectedPath;
             set
             {
                 _selectedPath = value;
-                RaisePropertyChanged(PROP_SelectedPath);
+                RaisePropertyChanged(PropSelectedPath);
                 CommandRemove.OnCanExecuteChanged();
             }
         }
+
         private PathItem _selectedPath;
-        public static string PROP_SelectedPath = "SelectedPath";
+        public static string PropSelectedPath = "SelectedPath";
 
         #endregion
 
         #region Privates
 
-        private IWinSimple _callingWin;
+        private readonly IWinSimple _callingWin;
 
         #endregion
     }

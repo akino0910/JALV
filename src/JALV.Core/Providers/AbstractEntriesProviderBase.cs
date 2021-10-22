@@ -10,25 +10,25 @@ namespace JALV.Core.Providers
     {
         public override IEnumerable<LogItem> GetEntries(string dataSource, FilterParams filter)
         {
-            IEnumerable<LogItem> enumerable = this.InternalGetEntries(dataSource, filter);
+            var enumerable = InternalGetEntries(dataSource, filter);
             return enumerable.ToArray(); // avoid file locks            
         }
 
         private IEnumerable<LogItem> InternalGetEntries(string dataSource, FilterParams filter)
         {
-            using (IDbConnection connection = this.CreateConnection(dataSource))
+            using (var connection = CreateConnection(dataSource))
             {
                 connection.Open();
-                using (IDbTransaction transaction = connection.BeginTransaction())
-                {                    
-                    using (IDbCommand command = connection.CreateCommand())
+                using (var transaction = connection.BeginTransaction())
+                {
+                    using (var command = connection.CreateCommand())
                     {
                         command.CommandText =
                             @"select caller, date, level, logger, thread, message, exception from log where date >= @date";
 
-                        IDbDataParameter parameter = command.CreateParameter();
+                        var parameter = command.CreateParameter();
                         parameter.ParameterName = "@date";
-                        parameter.Value = filter.Date.HasValue ? filter.Date.Value : MinDateTime;
+                        parameter.Value = filter.Date ?? MinDateTime;
                         command.Parameters.Add(parameter);
 
                         switch (filter.Level)
@@ -52,9 +52,6 @@ namespace JALV.Core.Providers
                             case 5:
                                 AddLevelClause(command, "FATAL");
                                 break;
-
-                            default:
-                                break;
                         }
 
                         AddLoggerClause(command, filter.Logger);
@@ -63,38 +60,38 @@ namespace JALV.Core.Providers
 
                         AddOrderByClause(command);
 
-                        using (IDataReader reader = command.ExecuteReader())
+                        using (var reader = command.ExecuteReader())
                         {
-                            int index = 0;
+                            var index = 0;
                             while (reader.Read())
                             {
-                                string caller = reader.GetString(0);
-                                string[] split = caller.Split(',');
+                                var caller = reader.GetString(0);
+                                var split = caller.Split(',');
 
                                 const string machineKey = "{log4jmachinename=";
-                                string item0 = Find(split, machineKey);
-                                string machineName = GetValue(item0, machineKey);
+                                var item0 = Find(split, machineKey);
+                                var machineName = GetValue(item0, machineKey);
 
                                 const string hostKey = " log4net:HostName=";
-                                string item1 = Find(split, hostKey);
-                                string hostName = GetValue(item1, hostKey);
+                                var item1 = Find(split, hostKey);
+                                var hostName = GetValue(item1, hostKey);
 
                                 const string userKey = " log4net:UserName=";
-                                string item2 = Find(split, userKey);
-                                string userName = GetValue(item2, userKey);
+                                var item2 = Find(split, userKey);
+                                var userName = GetValue(item2, userKey);
 
                                 const string appKey = " log4japp=";
-                                string item3 = Find(split, appKey);
-                                string app = GetValue(item3, appKey);
+                                var item3 = Find(split, appKey);
+                                var app = GetValue(item3, appKey);
 
-                                DateTime timeStamp = reader.GetDateTime(1);
-                                string level = reader.GetString(2);
-                                string logger = reader.GetString(3);
-                                string thread = reader.GetString(4);
-                                string message = reader.GetString(5);
-                                string exception = reader.GetString(6);
+                                var timeStamp = reader.GetDateTime(1);
+                                var level = reader.GetString(2);
+                                var logger = reader.GetString(3);
+                                var thread = reader.GetString(4);
+                                var message = reader.GetString(5);
+                                var exception = reader.GetString(6);
 
-                                LogItem entry = new LogItem
+                                var entry = new LogItem
                                 {
                                     Id = ++index,
                                     TimeStamp = timeStamp,
@@ -106,13 +103,14 @@ namespace JALV.Core.Providers
                                     MachineName = machineName,
                                     HostName = hostName,
                                     UserName = userName,
-                                    App = app,
+                                    App = app
                                 };
-                                // TODO: altri filtri
+                                // TODO: other filters
                                 yield return entry;
                             }
                         }
                     }
+
                     transaction.Commit();
                 }
             }
@@ -122,14 +120,14 @@ namespace JALV.Core.Providers
 
         private static void AddLevelClause(IDbCommand command, string level)
         {
-            if (command == null) 
+            if (command == null)
                 throw new ArgumentNullException("command");
-            if (String.IsNullOrEmpty(level))
+            if (string.IsNullOrEmpty(level))
                 throw new ArgumentNullException("level");
 
             command.CommandText += @" and level = @level";
 
-            IDbDataParameter parameter = command.CreateParameter();
+            var parameter = command.CreateParameter();
             parameter.ParameterName = "@level";
             parameter.Value = level;
             command.Parameters.Add(parameter);
@@ -139,14 +137,14 @@ namespace JALV.Core.Providers
         {
             if (command == null)
                 throw new ArgumentNullException("command");
-            if (String.IsNullOrEmpty(logger))
+            if (string.IsNullOrEmpty(logger))
                 return;
 
             command.CommandText += @" and logger like @logger";
 
-            IDbDataParameter parameter = command.CreateParameter();
+            var parameter = command.CreateParameter();
             parameter.ParameterName = "@logger";
-            parameter.Value = String.Format("%{0}%", logger);
+            parameter.Value = $"%{logger}%";
             command.Parameters.Add(parameter);
         }
 
@@ -154,14 +152,14 @@ namespace JALV.Core.Providers
         {
             if (command == null)
                 throw new ArgumentNullException("command");
-            if (String.IsNullOrEmpty(thread))
+            if (string.IsNullOrEmpty(thread))
                 return;
 
             command.CommandText += @" and thread like @thread";
 
-            IDbDataParameter parameter = command.CreateParameter();
+            var parameter = command.CreateParameter();
             parameter.ParameterName = "@thread";
-            parameter.Value = String.Format("%{0}%", thread);
+            parameter.Value = $"%{thread}%";
             command.Parameters.Add(parameter);
         }
 
@@ -169,14 +167,14 @@ namespace JALV.Core.Providers
         {
             if (command == null)
                 throw new ArgumentNullException("command");
-            if (String.IsNullOrEmpty(message))
+            if (string.IsNullOrEmpty(message))
                 return;
 
             command.CommandText += @" and message like @message";
 
-            IDbDataParameter parameter = command.CreateParameter();
+            var parameter = command.CreateParameter();
             parameter.ParameterName = "@message";
-            parameter.Value = String.Format("%{0}%", message);
+            parameter.Value = $"%{message}%";
             command.Parameters.Add(parameter);
         }
 
@@ -190,12 +188,12 @@ namespace JALV.Core.Providers
 
         private static string GetValue(string item, string key)
         {
-            return String.IsNullOrEmpty(item) ? String.Empty : item.Remove(0, key.Length);
+            return string.IsNullOrEmpty(item) ? string.Empty : item.Remove(0, key.Length);
         }
 
         private static string Find(IEnumerable<string> items, string key)
         {
-            return items.Where(i => i.StartsWith(key)).SingleOrDefault();
+            return items.SingleOrDefault(i => i.StartsWith(key));
         }
     }
 }

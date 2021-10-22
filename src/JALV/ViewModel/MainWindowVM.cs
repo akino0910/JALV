@@ -17,30 +17,31 @@ using JALV.Properties;
 
 namespace JALV.ViewModel
 {
-    public class MainWindowVM
+    public class MainWindowVm
         : BindableObject
     {
-        public MainWindowVM(IWinSimple win)
+        public MainWindowVm(IWinSimple win)
         {
             _callingWin = win;
 
-            CommandExit = new CommandRelay(commandExitExecute, p => true);
-            CommandOpenFile = new CommandRelay(commandOpenFileExecute, commandOpenFileCanExecute);
-            CommandSelectFolder = new CommandRelay(commandSelectFolderExecute, commandSelectFolderCanExecute);
-            CommandSaveFolder = new CommandRelay(commandSaveFolderExecute, commandSaveFolderCanExecute);
-            CommandRefresh = new CommandRelay(commandRefreshExecute, commandRefreshCanExecute);
-            CommandRefreshFiles = new CommandRelay(commandRefreshFilesExecute, commandRefreshFilesCanExecute);
-            CommandClear = new CommandRelay(commandClearExecute, commandClearCanExecute);
-            CommandDelete = new CommandRelay(commandDeleteExecute, commandDeleteCanExecute);
-            CommandOpenSelectedFolder = new CommandRelay(commandOpenSelectedFolderExecute, commandOpenSelectedFolderCanExecute);
-            CommandSelectAllFiles = new CommandRelay(commandSelectAllFilesExecute, commandSelectAllFilesCanExecute);
-            CommandIncreaseInterval = new CommandRelay(commandIncreaseIntervalExecute, p => true);
-            CommandDecreaseInterval = new CommandRelay(commandDecreaseIntervalExecute, p => true);
-            CommandAbout = new CommandRelay(commandAboutExecute, p => true);
+            CommandExit = new CommandRelay(CommandExitExecute, p => true);
+            CommandOpenFile = new CommandRelay(CommandOpenFileExecute, CommandOpenFileCanExecute);
+            CommandSelectFolder = new CommandRelay(CommandSelectFolderExecute, CommandSelectFolderCanExecute);
+            CommandSaveFolder = new CommandRelay(CommandSaveFolderExecute, CommandSaveFolderCanExecute);
+            CommandRefresh = new CommandRelay(CommandRefreshExecute, CommandRefreshCanExecute);
+            CommandRefreshFiles = new CommandRelay(CommandRefreshFilesExecute, CommandRefreshFilesCanExecute);
+            CommandClear = new CommandRelay(CommandClearExecute, CommandClearCanExecute);
+            CommandDelete = new CommandRelay(CommandDeleteExecute, CommandDeleteCanExecute);
+            CommandOpenSelectedFolder =
+                new CommandRelay(CommandOpenSelectedFolderExecute, CommandOpenSelectedFolderCanExecute);
+            CommandSelectAllFiles = new CommandRelay(CommandSelectAllFilesExecute, CommandSelectAllFilesCanExecute);
+            CommandIncreaseInterval = new CommandRelay(CommandIncreaseIntervalExecute, p => true);
+            CommandDecreaseInterval = new CommandRelay(CommandDecreaseIntervalExecute, p => true);
+            CommandAbout = new CommandRelay(CommandAboutExecute, p => true);
 
             FileList = new ObservableCollection<FileItem>();
             Items = new ObservableCollection<LogItem>();
-            loadFolderList();
+            LoadFolderList();
 
             SelectedFile = null;
             IsFileSelectionEnabled = false;
@@ -50,18 +51,18 @@ namespace JALV.ViewModel
             _selectDebug = _selectInfo = _selectWarn = _selectError = _selectFatal = false;
             _showLevelDebug = _showLevelInfo = _showLevelWarn = _showLevelError = _showLevelFatal = true;
 
-            bkLoader = new BackgroundWorker();
-            bkLoader.WorkerSupportsCancellation = true;
-            bkLoader.DoWork += bkLoaderRun;
-            bkLoader.RunWorkerCompleted += bkLoaderCompleted;
+            _bkLoader = new BackgroundWorker();
+            _bkLoader.WorkerSupportsCancellation = true;
+            _bkLoader.DoWork += BkLoaderRun;
+            _bkLoader.RunWorkerCompleted += BkLoaderCompleted;
 
             _dispatcherTimer = new DispatcherTimer();
-            _dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
+            _dispatcherTimer.Tick += dispatcherTimer_Tick;
 
-            AutoRefreshInterval = Constants.DEFAULT_REFRESH_INTERVAL;
+            AutoRefreshInterval = Constants.DefaultRefreshInterval;
             IsAutoRefreshEnabled = false;
 
-            refreshWindowTitle();
+            RefreshWindowTitle();
         }
 
         protected override void OnDispose()
@@ -72,17 +73,16 @@ namespace JALV.ViewModel
                 _dispatcherTimer.Tick -= dispatcherTimer_Tick;
             }
 
-            if (bkLoader != null)
+            if (_bkLoader != null)
             {
-                if (bkLoader.IsBusy)
-                    bkLoader.CancelAsync();
-                bkLoader.DoWork -= bkLoaderRun;
-                bkLoader.RunWorkerCompleted -= bkLoaderCompleted;
-                bkLoader.Dispose();
+                if (_bkLoader.IsBusy)
+                    _bkLoader.CancelAsync();
+                _bkLoader.DoWork -= BkLoaderRun;
+                _bkLoader.RunWorkerCompleted -= BkLoaderCompleted;
+                _bkLoader.Dispose();
             }
 
-            if (GridManager != null)
-                GridManager.Dispose();
+            GridManager?.Dispose();
 
             Items.Clear();
             FileList.Clear();
@@ -92,7 +92,7 @@ namespace JALV.ViewModel
 
         #region Costants
 
-        public const string NOTIFY_ScrollIntoView = "ScrollIntoView";
+        public const string NotifyScrollIntoView = "ScrollIntoView";
 
         #endregion
 
@@ -153,124 +153,128 @@ namespace JALV.ViewModel
         /// </summary>
         public ICommandAncestor CommandAbout { get; protected set; }
 
-        protected virtual object commandExitExecute(object parameter)
+        protected virtual object CommandExitExecute(object parameter)
         {
             _callingWin.Close();
             return null;
         }
 
-        protected virtual object commandOpenFileExecute(object parameter)
+        protected virtual object CommandOpenFileExecute(object parameter)
         {
-            using (System.Windows.Forms.OpenFileDialog dlg = new System.Windows.Forms.OpenFileDialog())
+            using (var dlg = new System.Windows.Forms.OpenFileDialog())
             {
-                bool addFile = parameter != null && parameter.Equals("ADD");
-                dlg.Filter = String.Format("{0} (*.json)|*.json|{1} (*.xml)|*.xml|{2} (*.*)|*.*",
-                    Properties.Resources.MainWindowVM_commandOpenFileExecute_JsonFilesCaption,
-                    Properties.Resources.MainWindowVM_commandOpenFileExecute_XmlFilesCaption,
-                    Properties.Resources.MainWindowVM_commandOpenFileExecute_AllFilesCaption);
+                var addFile = parameter != null && parameter.Equals("ADD");
+                dlg.Filter =
+                    $"{Resources.MainWindowVM_commandOpenFileExecute_JsonFilesCaption} (*.json)|*.json|{Resources.MainWindowVM_commandOpenFileExecute_XmlFilesCaption} (*.xml)|*.xml|{Resources.MainWindowVM_commandOpenFileExecute_AllFilesCaption} (*.*)|*.*";
                 dlg.DefaultExt = "json";
                 dlg.Multiselect = true;
-                dlg.Title = addFile ? Resources.MainWindowVM_commandOpenFileExecute_Add_Log_File : Resources.MainWindowVM_commandOpenFileExecute_Open_Log_File;
+                dlg.Title = addFile
+                    ? Resources.MainWindowVM_commandOpenFileExecute_Add_Log_File
+                    : Resources.MainWindowVM_commandOpenFileExecute_Open_Log_File;
 
                 if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    string[] files = dlg.FileNames;
+                    var files = dlg.FileNames;
                     SelectedFolder = null;
                     LoadFileList(files, addFile);
                 }
             }
+
             return null;
         }
 
-        protected virtual bool commandOpenFileCanExecute(object parameter)
+        protected virtual bool CommandOpenFileCanExecute(object parameter)
         {
             return true;
         }
 
-        protected virtual object commandSelectFolderExecute(object parameter)
+        protected virtual object CommandSelectFolderExecute(object parameter)
         {
-            using (System.Windows.Forms.FolderBrowserDialog dlg = new System.Windows.Forms.FolderBrowserDialog())
+            using (var dlg = new System.Windows.Forms.FolderBrowserDialog())
             {
                 dlg.Description = Resources.MainWindowVM_commandSelectFolderExecute_Description;
                 if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    string selectedPath = dlg.SelectedPath;
+                    var selectedPath = dlg.SelectedPath;
                     SelectedFolder = null;
-                    for (int i = 0; i < FolderList.Count; i++)
+                    for (var i = 0; i < FolderList.Count; i++)
                     {
-                        PathItem item = FolderList[i];
+                        var item = FolderList[i];
                         if (item.Path.Equals(selectedPath, StringComparison.OrdinalIgnoreCase))
                         {
                             SelectedFolder = item;
                             return null;
                         }
                     }
-                    loadFolderFiles(selectedPath);
+
+                    LoadFolderFiles(selectedPath);
                 }
             }
+
             return null;
         }
 
-        protected virtual bool commandSelectFolderCanExecute(object parameter)
+        protected virtual bool CommandSelectFolderCanExecute(object parameter)
         {
             return true;
         }
 
-        protected virtual object commandSaveFolderExecute(object parameter)
+        protected virtual object CommandSaveFolderExecute(object parameter)
         {
-            var win = new AddFolderPath() { Owner = _callingWin as Window };
+            var win = new AddFolderPath { Owner = _callingWin as Window };
             if (win.EditList())
-                loadFolderList();
+                LoadFolderList();
             return null;
         }
 
-        protected virtual bool commandSaveFolderCanExecute(object parameter)
+        protected virtual bool CommandSaveFolderCanExecute(object parameter)
         {
             return true;
         }
 
-        protected virtual object commandClearExecute(object parameter)
+        protected virtual object CommandClearExecute(object parameter)
         {
             if (GridManager != null)
             {
                 GridManager.ResetSearchTextBox();
                 RefreshView();
             }
+
             return null;
         }
 
-        protected virtual bool commandClearCanExecute(object parameter)
+        protected virtual bool CommandClearCanExecute(object parameter)
         {
             return true;
         }
 
-        protected virtual object commandRefreshExecute(object parameter)
+        protected virtual object CommandRefreshExecute(object parameter)
         {
             Items.Clear();
 
             if (IsFileSelectionEnabled)
             {
-                foreach (FileItem item in FileList)
+                foreach (var item in FileList)
                 {
                     if (item.Checked)
-                        loadLogFile(item.Path, true);
+                        LoadLogFile(item.Path, true);
                 }
             }
             else
             {
                 if (FileList.Count > 0 && SelectedFile != null)
-                    loadLogFile(SelectedFile.Path);
+                    LoadLogFile(SelectedFile.Path);
             }
 
             return null;
         }
 
-        protected virtual bool commandRefreshCanExecute(object parameter)
+        protected virtual bool CommandRefreshCanExecute(object parameter)
         {
             return true;
         }
 
-        protected virtual object commandRefreshFilesExecute(object parameter)
+        protected virtual object CommandRefreshFilesExecute(object parameter)
         {
             if (_selectedFolder != null)
             {
@@ -280,18 +284,18 @@ namespace JALV.ViewModel
                 {
                     //Reload file list and restore all checked items
                     IList<string> checkedItems = (from f in FileList
-                                                  where f.Checked
-                                                  select f.Path).ToList<string>();
+                        where f.Checked
+                        select f.Path).ToList();
                     SelectedFile = null;
-                    loadFolderFiles(_selectedFolder.Path);
+                    LoadFolderFiles(_selectedFolder.Path);
 
                     if (checkedItems != null && checkedItems.Count > 0)
                     {
-                        foreach (string filePath in checkedItems)
+                        foreach (var filePath in checkedItems)
                         {
-                            FileItem selItem = (from f in FileList
-                                                where filePath.Equals(f.Path, StringComparison.OrdinalIgnoreCase)
-                                                select f).FirstOrDefault<FileItem>();
+                            var selItem = (from f in FileList
+                                where filePath.Equals(f.Path, StringComparison.OrdinalIgnoreCase)
+                                select f).FirstOrDefault();
                             if (selItem != null)
                                 selItem.Checked = true;
                         }
@@ -300,40 +304,43 @@ namespace JALV.ViewModel
                 else
                 {
                     //Reload file list and restore selected item
-                    string selectedFilePath = SelectedFile != null ? SelectedFile.Path : string.Empty;
+                    var selectedFilePath = SelectedFile != null ? SelectedFile.Path : string.Empty;
                     SelectedFile = null;
-                    loadFolderFiles(_selectedFolder.Path);
+                    LoadFolderFiles(_selectedFolder.Path);
 
-                    if (!String.IsNullOrWhiteSpace(selectedFilePath))
+                    if (!string.IsNullOrWhiteSpace(selectedFilePath))
                     {
-                        FileItem selItem = (from f in FileList
-                                            where selectedFilePath.Equals(f.Path, StringComparison.OrdinalIgnoreCase)
-                                            select f).FirstOrDefault<FileItem>();
+                        var selItem = (from f in FileList
+                            where selectedFilePath.Equals(f.Path, StringComparison.OrdinalIgnoreCase)
+                            select f).FirstOrDefault();
                         if (selItem != null)
                             SelectedFile = selItem;
                     }
                 }
             }
+
             return null;
         }
 
-        protected virtual bool commandRefreshFilesCanExecute(object parameter)
+        protected virtual bool CommandRefreshFilesCanExecute(object parameter)
         {
             return SelectedFolder != null;
         }
 
-        protected virtual object commandDeleteExecute(object parameter)
+        protected virtual object CommandDeleteExecute(object parameter)
         {
             if (IsFileSelectionEnabled)
             {
-                if (MessageBox.Show(Resources.MainWindowVM_commandDeleteExecute_DeleteCheckedFiles_ConfirmText, Resources.MainWindowVM_commandDeleteExecute_DeleteCheckedFiles_ConfirmTitle, MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.No)
+                if (MessageBox.Show(Resources.MainWindowVM_commandDeleteExecute_DeleteCheckedFiles_ConfirmText,
+                        Resources.MainWindowVM_commandDeleteExecute_DeleteCheckedFiles_ConfirmTitle,
+                        MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.No)
                     return null;
 
                 //Delete all selected file
-                for (int i = FileList.Count - 1; i >= 0; i--)
+                for (var i = FileList.Count - 1; i >= 0; i--)
                 {
-                    FileItem item = FileList[i];
-                    if (item.Checked && deleteFile(item.Path))
+                    var item = FileList[i];
+                    if (item.Checked && DeleteFile(item.Path))
                     {
                         Items.Clear();
                         SelectedFile = null;
@@ -343,14 +350,16 @@ namespace JALV.ViewModel
             }
             else
             {
-                if (MessageBox.Show(Resources.MainWindowVM_commandDeleteExecute_DeleteSelectedFile_ConfirmText, Resources.MainWindowVM_commandDeleteExecute_DeleteSelectedFile_ConfirmTitle, MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.No)
+                if (MessageBox.Show(Resources.MainWindowVM_commandDeleteExecute_DeleteSelectedFile_ConfirmText,
+                        Resources.MainWindowVM_commandDeleteExecute_DeleteSelectedFile_ConfirmTitle,
+                        MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.No)
                     return null;
 
                 //Delete selected file
                 if (SelectedFile != null)
                 {
-                    int indexToDelete = FileList.IndexOf(SelectedFile);
-                    if (deleteFile(SelectedFile.Path))
+                    var indexToDelete = FileList.IndexOf(SelectedFile);
+                    if (DeleteFile(SelectedFile.Path))
                     {
                         Items.Clear();
                         SelectedFile = null;
@@ -358,10 +367,11 @@ namespace JALV.ViewModel
                     }
                 }
             }
+
             return null;
         }
 
-        protected virtual bool commandDeleteCanExecute(object parameter)
+        protected virtual bool CommandDeleteCanExecute(object parameter)
         {
             if (IsFileSelectionEnabled)
             {
@@ -369,27 +379,27 @@ namespace JALV.ViewModel
                     return false;
 
                 return (from f in FileList
-                        where f.Checked
-                        select f).Count() > 0;
+                    where f.Checked
+                    select f).Count() > 0;
             }
-            else
-                return SelectedFile != null;
+
+            return SelectedFile != null;
         }
 
-        protected virtual object commandOpenSelectedFolderExecute(object parameter)
+        protected virtual object CommandOpenSelectedFolderExecute(object parameter)
         {
-            string path = SelectedFolder != null ? SelectedFolder.Path : string.Empty;
-            if (!String.IsNullOrWhiteSpace(path) && Directory.Exists(path))
+            var path = SelectedFolder != null ? SelectedFolder.Path : string.Empty;
+            if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path))
                 Process.Start("explorer.exe", path);
             return null;
         }
 
-        protected virtual bool commandOpenSelectedFolderCanExecute(object parameter)
+        protected virtual bool CommandOpenSelectedFolderCanExecute(object parameter)
         {
             return SelectedFolder != null;
         }
 
-        protected virtual object commandSelectAllFilesExecute(object parameter)
+        protected virtual object CommandSelectAllFilesExecute(object parameter)
         {
             if (parameter == null)
                 return null;
@@ -404,56 +414,56 @@ namespace JALV.ViewModel
                     {
                         case "ALL":
                             IList<string> files = new List<string>();
-                            foreach (FileItem item in FileList)
+                            foreach (var item in FileList)
                             {
                                 files.Add(item.Path);
                                 item.Checked = true;
                             }
 
-                            if (bkLoader != null)
+                            if (_bkLoader != null)
                             {
                                 while (IsLoading)
                                     GlobalHelper.DoEvents();
 
                                 IsLoading = true;
 
-                                object[] args = { files.ToArray<string>(), false };
-                                bkLoader.RunWorkerAsync(args);
+                                object[] args = { files.ToArray(), false };
+                                _bkLoader.RunWorkerAsync(args);
                             }
+
                             break;
 
                         case "NONE":
-                            foreach (FileItem item in FileList)
+                            foreach (var item in FileList)
                                 item.Checked = false;
 
                             Items.Clear();
-                            updateCounters();
-                            break;
-
-                        default:
+                            UpdateCounters();
                             break;
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message, Resources.GlobalHelper_ParseLogFile_Error_Title, MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    MessageBox.Show(ex.Message, Resources.GlobalHelper_ParseLogFile_Error_Title, MessageBoxButton.OK,
+                        MessageBoxImage.Exclamation);
                 }
                 finally
                 {
                     _loadingAllFiles = false;
                 }
             }
+
             return null;
         }
 
-        protected virtual bool commandSelectAllFilesCanExecute(object parameter)
+        protected virtual bool CommandSelectAllFilesCanExecute(object parameter)
         {
             return IsFileSelectionEnabled && FileList.Count > 0;
         }
 
-        protected virtual object commandAboutExecute(object parameter)
+        protected virtual object CommandAboutExecute(object parameter)
         {
-            var win = new About() { Owner = _callingWin as Window };
+            var win = new About { Owner = _callingWin as Window };
             win.ShowDialog();
             return null;
         }
@@ -465,29 +475,30 @@ namespace JALV.ViewModel
         /// <summary>
         /// RefreshUI Action
         /// </summary>
-        public Action<string, object> RefreshUI { get; set; }
+        public Action<string, object> RefreshUi { get; set; }
 
         /// <summary>
         /// WindowTitle Property
         /// </summary>
         public string WindowTitle
         {
-            get { return _windowTitle; }
+            get => _windowTitle;
             set
             {
                 _windowTitle = value;
-                RaisePropertyChanged(PROP_WindowTitle);
+                RaisePropertyChanged(PropWindowTitle);
             }
         }
+
         private string _windowTitle;
-        public static string PROP_WindowTitle = "WindowTitle";
+        public static string PropWindowTitle = "WindowTitle";
 
         /// <summary>
         /// RecentFileList Manager
         /// </summary>
         public RecentFileList RecentFileList
         {
-            get { return _recentFileList; }
+            get => _recentFileList;
             set
             {
                 _recentFileList = value;
@@ -496,40 +507,42 @@ namespace JALV.ViewModel
                     _recentFileList.MenuClick += (s, e) =>
                     {
                         SelectedFolder = null;
-                        LoadFileList(new string[] { e.Filepath }, false);
+                        LoadFileList(new[] { e.Filepath });
                     };
-                    updateJumpList();
+                    UpdateJumpList();
                 }
             }
         }
+
         private RecentFileList _recentFileList;
-        public static string PROP_RecentFileList = "RecentFileList";
+        public static string PropRecentFileList = "RecentFileList";
 
         /// <summary>
         /// IsLoading Property
         /// </summary>
         public bool IsLoading
         {
-            get { return _isLoading; }
+            get => _isLoading;
             set
             {
                 _isLoading = value;
-                RaisePropertyChanged(PROP_IsLoading);
+                RaisePropertyChanged(PropIsLoading);
             }
         }
+
         private bool _isLoading;
-        public static string PROP_IsLoading = "IsLoading";
+        public static string PropIsLoading = "IsLoading";
 
         /// <summary>
         /// IsFileSelectionEnabled Property
         /// </summary>
         public bool IsFileSelectionEnabled
         {
-            get { return _isFileSelectionEnabled; }
+            get => _isFileSelectionEnabled;
             set
             {
                 _isFileSelectionEnabled = value;
-                RaisePropertyChanged(PROP_IsFileSelectionEnabled);
+                RaisePropertyChanged(PropIsFileSelectionEnabled);
 
                 if (_isFileSelectionEnabled)
                 {
@@ -540,427 +553,446 @@ namespace JALV.ViewModel
                 else
                 {
                     Items.Clear();
-                    foreach (FileItem item in FileList)
+                    foreach (var item in FileList)
                         item.Checked = false;
                     SelectedFile = null;
                 }
 
-                refreshCommandsCanExecute();
-                refreshWindowTitle();
+                RefreshCommandsCanExecute();
+                RefreshWindowTitle();
             }
         }
+
         private bool _isFileSelectionEnabled;
-        public static string PROP_IsFileSelectionEnabled = "IsFileSelectionEnabled";
+        public static string PropIsFileSelectionEnabled = "IsFileSelectionEnabled";
 
         /// <summary>
         /// SelectedFile Property
         /// </summary>
         public FileItem SelectedFile
         {
-            get { return _selectedFile; }
+            get => _selectedFile;
             set
             {
                 if (value != _selectedFile)
                 {
                     _selectedFile = value;
-                    RaisePropertyChanged(PROP_SelectedFile);
+                    RaisePropertyChanged(PropSelectedFile);
 
                     if (!_loadingFileList && _selectedFile != null)
                     {
-                        string path = _selectedFile.Path;
+                        var path = _selectedFile.Path;
                         SelectedFileDir = !string.IsNullOrWhiteSpace(path) ? Path.GetDirectoryName(path) : string.Empty;
                         if (!IsFileSelectionEnabled)
-                            loadLogFile(path);
+                            LoadLogFile(path);
                     }
 
-                    refreshCommandsCanExecute();
-                    refreshWindowTitle();
+                    RefreshCommandsCanExecute();
+                    RefreshWindowTitle();
                 }
             }
         }
+
         private FileItem _selectedFile;
-        public static string PROP_SelectedFile = "SelectedFile";
+        public static string PropSelectedFile = "SelectedFile";
 
         /// <summary>
         /// SelectedFolder Property
         /// </summary>
         public PathItem SelectedFolder
         {
-            get { return _selectedFolder; }
+            get => _selectedFolder;
             set
             {
                 if (value != _selectedFolder)
                 {
                     _selectedFolder = value;
-                    RaisePropertyChanged(PROP_SelectedFolder);
+                    RaisePropertyChanged(PropSelectedFolder);
 
                     Items.Clear();
                     if (_selectedFolder != null)
-                        loadFolderFiles(_selectedFolder.Path);
+                        LoadFolderFiles(_selectedFolder.Path);
 
-                    refreshCommandsCanExecute();
+                    RefreshCommandsCanExecute();
                 }
             }
         }
+
         private PathItem _selectedFolder;
-        public static string PROP_SelectedFolder = "SelectedFolder";
+        public static string PropSelectedFolder = "SelectedFolder";
 
         /// <summary>
         /// SelectedFileDir Property
         /// </summary>
         public string SelectedFileDir
         {
-            get { return _selectedFileDir; }
+            get => _selectedFileDir;
             set
             {
                 _selectedFileDir = value;
-                RaisePropertyChanged(PROP_SelectedFileDir);
+                RaisePropertyChanged(PropSelectedFileDir);
             }
         }
+
         private string _selectedFileDir;
-        public static string PROP_SelectedFileDir = "SelectedFileDir";
+        public static string PropSelectedFileDir = "SelectedFileDir";
 
         /// <summary>
         /// FolderList Property
         /// </summary>
         public ObservableCollection<PathItem> FolderList
         {
-            get { return _folderList; }
+            get => _folderList;
             set
             {
                 _folderList = value;
-                RaisePropertyChanged(PROP_FolderList);
+                RaisePropertyChanged(PropFolderList);
             }
         }
+
         private ObservableCollection<PathItem> _folderList;
-        public static string PROP_FolderList = "FolderList";
+        public static string PropFolderList = "FolderList";
 
         /// <summary>
         /// FileList Property
         /// </summary>
         public ObservableCollection<FileItem> FileList
         {
-            get { return _fileList; }
+            get => _fileList;
             set
             {
                 _fileList = value;
-                RaisePropertyChanged(PROP_FileList);
+                RaisePropertyChanged(PropFileList);
 
-                refreshCommandsCanExecute();
+                RefreshCommandsCanExecute();
             }
         }
+
         private ObservableCollection<FileItem> _fileList;
-        public static string PROP_FileList = "FileList";
+        public static string PropFileList = "FileList";
 
         /// <summary>
         /// LogItems Property
         /// </summary>
         public ObservableCollection<LogItem> Items
         {
-            get { return _items; }
+            get => _items;
             set
             {
                 _items = value;
-                RaisePropertyChanged(PROP_Items);
+                RaisePropertyChanged(PropItems);
             }
         }
+
         private ObservableCollection<LogItem> _items;
-        public static string PROP_Items = "Items";
+        public static string PropItems = "Items";
 
         /// <summary>
         /// SelectedLogItem Property
         /// </summary>
         public LogItem SelectedLogItem
         {
-            get { return _selectedLogItem; }
+            get => _selectedLogItem;
             set
             {
                 _selectedLogItem = value;
-                RaisePropertyChanged(PROP_SelectedLogItem);
+                RaisePropertyChanged(PropSelectedLogItem);
 
                 _goToLogItemId = _selectedLogItem != null ? _selectedLogItem.Id.ToString() : string.Empty;
-                RaisePropertyChanged(PROP_GoToLogItemId);
+                RaisePropertyChanged(PropGoToLogItemId);
 
-                refreshWindowTitle();
+                RefreshWindowTitle();
             }
         }
+
         private LogItem _selectedLogItem;
-        public static string PROP_SelectedLogItem = "SelectedLogItem";
+        public static string PropSelectedLogItem = "SelectedLogItem";
 
         /// <summary>
         /// ShowLevelDebug Property
         /// </summary>
         public bool ShowLevelDebug
         {
-            get { return _showLevelDebug; }
+            get => _showLevelDebug;
             set
             {
                 if (value != _showLevelDebug)
                 {
                     _showLevelDebug = value;
-                    RaisePropertyChanged(PROP_ShowLevelDebug);
-                    resetLevelSelection();
+                    RaisePropertyChanged(PropShowLevelDebug);
+                    ResetLevelSelection();
                     RefreshView();
                 }
             }
         }
+
         private bool _showLevelDebug;
-        public static string PROP_ShowLevelDebug = "ShowLevelDebug";
+        public static string PropShowLevelDebug = "ShowLevelDebug";
 
         /// <summary>
         /// ShowLevelInfo Property
         /// </summary>
         public bool ShowLevelInfo
         {
-            get { return _showLevelInfo; }
+            get => _showLevelInfo;
             set
             {
                 if (value != _showLevelInfo)
                 {
                     _showLevelInfo = value;
-                    RaisePropertyChanged(PROP_ShowLevelInfo);
-                    resetLevelSelection();
+                    RaisePropertyChanged(PropShowLevelInfo);
+                    ResetLevelSelection();
                     RefreshView();
                 }
             }
         }
+
         private bool _showLevelInfo;
-        public static string PROP_ShowLevelInfo = "ShowLevelInfo";
+        public static string PropShowLevelInfo = "ShowLevelInfo";
 
         /// <summary>
         /// ShowLevelWarn Property
         /// </summary>
         public bool ShowLevelWarn
         {
-            get { return _showLevelWarn; }
+            get => _showLevelWarn;
             set
             {
                 if (value != _showLevelWarn)
                 {
                     _showLevelWarn = value;
-                    RaisePropertyChanged(PROP_ShowLevelWarn);
-                    resetLevelSelection();
+                    RaisePropertyChanged(PropShowLevelWarn);
+                    ResetLevelSelection();
                     RefreshView();
                 }
             }
         }
+
         private bool _showLevelWarn;
-        public static string PROP_ShowLevelWarn = "ShowLevelWarn";
+        public static string PropShowLevelWarn = "ShowLevelWarn";
 
         /// <summary>
         /// ShowLevelError Property
         /// </summary>
         public bool ShowLevelError
         {
-            get { return _showLevelError; }
+            get => _showLevelError;
             set
             {
                 if (value != _showLevelError)
                 {
                     _showLevelError = value;
-                    RaisePropertyChanged(PROP_ShowLevelError);
-                    resetLevelSelection();
+                    RaisePropertyChanged(PropShowLevelError);
+                    ResetLevelSelection();
                     RefreshView();
                 }
             }
         }
+
         private bool _showLevelError;
-        public static string PROP_ShowLevelError = "ShowLevelError";
+        public static string PropShowLevelError = "ShowLevelError";
 
         /// <summary>
         /// ShowLevelFatal Property
         /// </summary>
         public bool ShowLevelFatal
         {
-            get { return _showLevelFatal; }
+            get => _showLevelFatal;
             set
             {
                 if (value != _showLevelFatal)
                 {
                     _showLevelFatal = value;
-                    RaisePropertyChanged(PROP_ShowLevelFatal);
-                    resetLevelSelection();
+                    RaisePropertyChanged(PropShowLevelFatal);
+                    ResetLevelSelection();
                     RefreshView();
                 }
             }
         }
+
         private bool _showLevelFatal;
-        public static string PROP_ShowLevelFatal = "ShowLevelFatal";
+        public static string PropShowLevelFatal = "ShowLevelFatal";
 
         /// <summary>
         /// SelectAll Property
         /// </summary>
         public bool SelectAll
         {
-            get { return _selectAll; }
+            get => _selectAll;
             set
             {
                 if (value != _selectAll)
                 {
                     _selectAll = value;
-                    RaisePropertyChanged(PROP_SelectAll);
+                    RaisePropertyChanged(PropSelectAll);
 
                     if (_selectAll)
                     {
                         _showLevelDebug = _showLevelInfo = _showLevelWarn = _showLevelError = _showLevelFatal = true;
-                        refreshCheckBoxBinding();
+                        RefreshCheckBoxBinding();
                         RefreshView();
                     }
                 }
             }
         }
+
         private bool _selectAll;
-        public static string PROP_SelectAll = "SelectAll";
+        public static string PropSelectAll = "SelectAll";
 
         /// <summary>
         /// SelectDebug Property
         /// </summary>
         public bool SelectDebug
         {
-            get { return _selectDebug; }
+            get => _selectDebug;
             set
             {
                 if (value != _selectDebug)
                 {
                     _selectDebug = value;
-                    RaisePropertyChanged(PROP_SelectDebug);
+                    RaisePropertyChanged(PropSelectDebug);
 
                     if (_selectDebug)
                     {
                         _showLevelInfo = _showLevelWarn = _showLevelError = _showLevelFatal = false;
                         _showLevelDebug = true;
-                        refreshCheckBoxBinding();
+                        RefreshCheckBoxBinding();
                         RefreshView();
                     }
                 }
             }
         }
+
         private bool _selectDebug;
-        public static string PROP_SelectDebug = "SelectDebug";
+        public static string PropSelectDebug = "SelectDebug";
 
         /// <summary>
         /// SelectInfo Property
         /// </summary>
         public bool SelectInfo
         {
-            get { return _selectInfo; }
+            get => _selectInfo;
             set
             {
                 if (value != _selectInfo)
                 {
                     _selectInfo = value;
-                    RaisePropertyChanged(PROP_SelectInfo);
+                    RaisePropertyChanged(PropSelectInfo);
 
                     if (_selectInfo)
                     {
                         _showLevelDebug = _showLevelWarn = _showLevelError = _showLevelFatal = false;
                         _showLevelInfo = true;
-                        refreshCheckBoxBinding();
+                        RefreshCheckBoxBinding();
                         RefreshView();
                     }
                 }
             }
         }
+
         private bool _selectInfo;
-        public static string PROP_SelectInfo = "SelectInfo";
+        public static string PropSelectInfo = "SelectInfo";
 
         /// <summary>
         /// SelectWarn Property
         /// </summary>
         public bool SelectWarn
         {
-            get { return _selectWarn; }
+            get => _selectWarn;
             set
             {
                 if (value != _selectWarn)
                 {
                     _selectWarn = value;
-                    RaisePropertyChanged(PROP_SelectWarn);
+                    RaisePropertyChanged(PropSelectWarn);
 
                     if (_selectWarn)
                     {
                         _showLevelDebug = _showLevelInfo = _showLevelError = _showLevelFatal = false;
                         _showLevelWarn = true;
-                        refreshCheckBoxBinding();
+                        RefreshCheckBoxBinding();
                         RefreshView();
                     }
                 }
             }
         }
+
         private bool _selectWarn;
-        public static string PROP_SelectWarn = "SelectWarn";
+        public static string PropSelectWarn = "SelectWarn";
 
         /// <summary>
         /// SelectError Property
         /// </summary>
         public bool SelectError
         {
-            get { return _selectError; }
+            get => _selectError;
             set
             {
                 if (value != _selectError)
                 {
                     _selectError = value;
-                    RaisePropertyChanged(PROP_SelectError);
+                    RaisePropertyChanged(PropSelectError);
 
                     if (_selectError)
                     {
                         _showLevelDebug = _showLevelInfo = _showLevelWarn = _showLevelFatal = false;
                         _showLevelError = true;
-                        refreshCheckBoxBinding();
+                        RefreshCheckBoxBinding();
                         RefreshView();
                     }
                 }
             }
         }
+
         private bool _selectError;
-        public static string PROP_SelectError = "SelectError";
+        public static string PropSelectError = "SelectError";
 
         /// <summary>
         /// SelectFatal Property
         /// </summary>
         public bool SelectFatal
         {
-            get { return _selectFatal; }
+            get => _selectFatal;
             set
             {
                 if (value != _selectFatal)
                 {
                     _selectFatal = value;
-                    RaisePropertyChanged(PROP_SelectFatal);
+                    RaisePropertyChanged(PropSelectFatal);
 
                     if (_selectFatal)
                     {
                         _showLevelDebug = _showLevelInfo = _showLevelWarn = _showLevelError = false;
                         _showLevelFatal = true;
-                        refreshCheckBoxBinding();
+                        RefreshCheckBoxBinding();
                         RefreshView();
                     }
                 }
             }
         }
+
         private bool _selectFatal;
-        public static string PROP_SelectFatal = "SelectFatal";
+        public static string PropSelectFatal = "SelectFatal";
 
         /// <summary>
         /// GoToLogItemId Property
         /// </summary>
         public string GoToLogItemId
         {
-            get { return _goToLogItemId; }
+            get => _goToLogItemId;
             set
             {
                 _goToLogItemId = value;
 
-                int idGoTo = 0;
+                var idGoTo = 0;
                 int.TryParse(value, out idGoTo);
-                int currentId = SelectedLogItem != null ? SelectedLogItem.Id : 0;
+                var currentId = SelectedLogItem != null ? SelectedLogItem.Id : 0;
 
                 if (idGoTo > 0 && idGoTo != currentId)
                 {
                     var selectItem = (from it in Items
-                                      where it.Id == idGoTo
-                                      select it).FirstOrDefault<LogItem>();
+                        where it.Id == idGoTo
+                        select it).FirstOrDefault();
 
                     if (selectItem != null)
                         SelectedLogItem = selectItem;
@@ -968,11 +1000,12 @@ namespace JALV.ViewModel
                 else
                     _goToLogItemId = currentId != 0 ? currentId.ToString() : string.Empty;
 
-                RaisePropertyChanged(PROP_GoToLogItemId);
+                RaisePropertyChanged(PropGoToLogItemId);
             }
         }
+
         private string _goToLogItemId;
-        public static string PROP_GoToLogItemId = "GoToLogItemId";
+        public static string PropGoToLogItemId = "GoToLogItemId";
 
         #endregion
 
@@ -987,7 +1020,7 @@ namespace JALV.ViewModel
             if (!add)
                 FileList.Clear();
 
-            foreach (string path in pathList)
+            foreach (var path in pathList)
             {
                 //Ignore path if is not valid
                 if (!File.Exists(path) && !Directory.Exists(path))
@@ -995,26 +1028,26 @@ namespace JALV.ViewModel
 
                 //Get files list to add
                 string[] files = null;
-                FileAttributes attr = File.GetAttributes(path);
+                var attr = File.GetAttributes(path);
                 if (attr.HasFlag(FileAttributes.Directory))
                     files = Directory.GetFiles(path);
                 else
-                    files = new string[] { path };
+                    files = new[] { path };
 
-                foreach (string file in files)
+                foreach (var file in files)
                 {
-                    string fileName = Path.GetFileName(file);
-                    FileItem newItem = new FileItem(fileName, file);
-                    newItem.PropertyChanged += delegate (object sender, PropertyChangedEventArgs e)
+                    var fileName = Path.GetFileName(file);
+                    var newItem = new FileItem(fileName, file);
+                    newItem.PropertyChanged += delegate(object sender, PropertyChangedEventArgs e)
                     {
-                        if (e.PropertyName.Equals(FileItem.PROP_Checked) && !_loadingAllFiles)
+                        if (e.PropertyName.Equals(FileItem.PropChecked) && !_loadingAllFiles)
                         {
                             if (newItem.Checked)
-                                loadLogFile(newItem.Path, true);
+                                LoadLogFile(newItem.Path, true);
                             else
-                                removeItems(newItem.Path);
+                                RemoveItems(newItem.Path);
 
-                            refreshCommandsCanExecute();
+                            RefreshCommandsCanExecute();
                         }
                     };
                     FileList.Add(newItem);
@@ -1040,22 +1073,22 @@ namespace JALV.ViewModel
 
         #region Privates
 
-        private IWinSimple _callingWin;
+        private readonly IWinSimple _callingWin;
 
-        private bool _loadingFileList = false;
+        private bool _loadingFileList;
 
-        private bool _loadingAllFiles = false;
+        private bool _loadingAllFiles;
 
-        private void refreshCheckBoxBinding()
+        private void RefreshCheckBoxBinding()
         {
-            RaisePropertyChanged(PROP_ShowLevelDebug);
-            RaisePropertyChanged(PROP_ShowLevelInfo);
-            RaisePropertyChanged(PROP_ShowLevelWarn);
-            RaisePropertyChanged(PROP_ShowLevelError);
-            RaisePropertyChanged(PROP_ShowLevelFatal);
+            RaisePropertyChanged(PropShowLevelDebug);
+            RaisePropertyChanged(PropShowLevelInfo);
+            RaisePropertyChanged(PropShowLevelWarn);
+            RaisePropertyChanged(PropShowLevelError);
+            RaisePropertyChanged(PropShowLevelFatal);
         }
 
-        private void resetLevelSelection()
+        private void ResetLevelSelection()
         {
             SelectAll = false;
             SelectDebug = false;
@@ -1065,11 +1098,11 @@ namespace JALV.ViewModel
             SelectFatal = false;
         }
 
-        private void loadFolderList()
+        private void LoadFolderList()
         {
             FileList.Clear();
             SelectedFolder = null;
-            string path = Constants.FOLDERS_FILE_PATH;
+            var path = Constants.FoldersFilePath;
             IList<PathItem> folders = null;
             try
             {
@@ -1077,30 +1110,35 @@ namespace JALV.ViewModel
             }
             catch (Exception ex)
             {
-                string message = String.Format((string)Resources.GlobalHelper_ParseFolderFile_Error_Text, path, ex.Message);
-                MessageBox.Show(message, Resources.GlobalHelper_ParseFolderFile_Error_Title, MessageBoxButton.OK, MessageBoxImage.Exclamation);
-
+                var message = string.Format(Resources.GlobalHelper_ParseFolderFile_Error_Text, path, ex.Message);
+                MessageBox.Show(message, Resources.GlobalHelper_ParseFolderFile_Error_Title, MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation);
             }
-            FolderList = folders != null ? new ObservableCollection<PathItem>(folders) : new ObservableCollection<PathItem>();
+
+            FolderList = folders != null
+                ? new ObservableCollection<PathItem>(folders)
+                : new ObservableCollection<PathItem>();
         }
 
-        private void loadFolderFiles(string folderPath)
+        private void LoadFolderFiles(string folderPath)
         {
             if (Directory.Exists(folderPath))
             {
-                string[] files = Directory.GetFiles(folderPath);
+                var files = Directory.GetFiles(folderPath);
                 LoadFileList(files);
             }
             else
             {
                 FileList.Clear();
-                MessageBox.Show(String.Format(Resources.MainWindowVM_loadFolderFiles_ErrorMessage_Text, folderPath), Resources.MainWindowVM_loadFolderFiles_ErrorMessageText_Title, MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                MessageBox.Show(string.Format(Resources.MainWindowVM_loadFolderFiles_ErrorMessage_Text, folderPath),
+                    Resources.MainWindowVM_loadFolderFiles_ErrorMessageText_Title, MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation);
             }
         }
 
-        private void loadLogFile(string path, bool merge = false)
+        private void LoadLogFile(string path, bool merge = false)
         {
-            if (bkLoader != null)
+            if (_bkLoader != null)
             {
                 while (IsLoading)
                     GlobalHelper.DoEvents();
@@ -1108,14 +1146,14 @@ namespace JALV.ViewModel
                 IsLoading = true;
 
                 RecentFileList.InsertFile(path);
-                updateJumpList();
+                UpdateJumpList();
 
-                object[] args = { new string[] { path }, merge };
-                bkLoader.RunWorkerAsync(args);
+                object[] args = { new[] { path }, merge };
+                _bkLoader.RunWorkerAsync(args);
             }
         }
 
-        private void removeItems(string path)
+        private void RemoveItems(string path)
         {
             //Less performance
             //for (int i = Items.Count - 1; i >= 0; i--)
@@ -1126,34 +1164,34 @@ namespace JALV.ViewModel
 
             //Best performance
             var selectedItems = from it in Items
-                                where (!it.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
-                                select it;
+                where !it.Path.Equals(path, StringComparison.OrdinalIgnoreCase)
+                select it;
             Items = new ObservableCollection<LogItem>(selectedItems);
 
-            int itemId = 1;
-            foreach (LogItem item in Items)
+            var itemId = 1;
+            foreach (var item in Items)
                 item.Id = itemId++;
 
-            updateCounters();
+            UpdateCounters();
         }
 
-        private bool deleteFile(string path)
+        private bool DeleteFile(string path)
         {
             try
             {
-                FileInfo fileInfo = new FileInfo(path);
-                if (fileInfo != null)
-                    fileInfo.Delete();
+                var fileInfo = new FileInfo(path);
+                fileInfo?.Delete();
                 return true;
             }
             catch (Exception ex)
             {
-                MessageBox.Show(String.Format(Resources.MainWindowVM_deleteFile_ErrorMessage_Text, path, ex.Message), Resources.MainWindowVM_deleteFile_ErrorMessage_Title, MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(string.Format(Resources.MainWindowVM_deleteFile_ErrorMessage_Text, path, ex.Message),
+                    Resources.MainWindowVM_deleteFile_ErrorMessage_Title, MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
         }
 
-        private void refreshCommandsCanExecute()
+        private void RefreshCommandsCanExecute()
         {
             CommandRefreshFiles.OnCanExecuteChanged();
             CommandDelete.OnCanExecuteChanged();
@@ -1161,9 +1199,9 @@ namespace JALV.ViewModel
             CommandSelectAllFiles.OnCanExecuteChanged();
         }
 
-        private void updateJumpList()
+        private void UpdateJumpList()
         {
-            JumpList myJumpList = JumpList.GetJumpList(Application.Current);
+            var myJumpList = JumpList.GetJumpList(Application.Current);
 
             if (myJumpList == null)
             {
@@ -1174,15 +1212,16 @@ namespace JALV.ViewModel
             myJumpList.JumpItems.Clear();
             if (RecentFileList != null && RecentFileList.RecentFiles != null)
             {
-                foreach (string item in RecentFileList.RecentFiles)
+                foreach (var item in RecentFileList.RecentFiles)
                 {
                     try
                     {
-                        JumpTask myJumpTask = new JumpTask();
+                        var myJumpTask = new JumpTask();
                         myJumpTask.CustomCategory = Resources.MainWindowVM_updateJumpList_CustomCategoryName;
                         myJumpTask.Title = Path.GetFileName(item);
                         //myJumpTask.Description = "";
-                        myJumpTask.ApplicationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, System.AppDomain.CurrentDomain.FriendlyName);
+                        myJumpTask.ApplicationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                            AppDomain.CurrentDomain.FriendlyName);
                         myJumpTask.Arguments = item;
                         myJumpList.JumpItems.Add(myJumpTask);
                     }
@@ -1192,33 +1231,33 @@ namespace JALV.ViewModel
                     }
                 }
             }
+
             myJumpList.Apply();
         }
 
-        private void raiseRefreshUI(string eventName, object parameter = null)
+        private void RaiseRefreshUi(string eventName, object parameter = null)
         {
-            if (RefreshUI != null)
-                RefreshUI(eventName, parameter);
+            RefreshUi?.Invoke(eventName, parameter);
         }
 
-        private void refreshWindowTitle()
+        private void RefreshWindowTitle()
         {
-            string fileName = string.Empty;
+            var fileName = string.Empty;
             if (IsFileSelectionEnabled && SelectedLogItem != null)
             {
                 fileName = (from f in FileList
-                            where SelectedLogItem.Path.Equals(f.Path, StringComparison.OrdinalIgnoreCase)
-                            select f.FileName).FirstOrDefault<string>();
+                    where SelectedLogItem.Path.Equals(f.Path, StringComparison.OrdinalIgnoreCase)
+                    select f.FileName).FirstOrDefault();
             }
 
             if (!IsFileSelectionEnabled && SelectedFile != null)
                 fileName = SelectedFile.FileName;
 
-            string title = string.Empty;
-            if (!String.IsNullOrWhiteSpace(fileName))
-                title = String.Format("{0} / {1}", Properties.Resources.MainWindow_Title, fileName);
+            var title = string.Empty;
+            if (!string.IsNullOrWhiteSpace(fileName))
+                title = $"{Resources.MainWindow_Title} / {fileName}";
             else
-                title = Properties.Resources.MainWindow_Title;
+                title = Resources.MainWindow_Title;
 
             if (!title.Equals(WindowTitle, StringComparison.OrdinalIgnoreCase))
                 WindowTitle = title;
@@ -1228,24 +1267,24 @@ namespace JALV.ViewModel
 
         #region BackgroundWorker Methods (bkLoader)
 
-        private BackgroundWorker bkLoader;
+        private readonly BackgroundWorker _bkLoader;
 
-        private void bkLoaderRun(object sender, DoWorkEventArgs e)
+        private void BkLoaderRun(object sender, DoWorkEventArgs e)
         {
-            object[] args = e.Argument as object[];
+            var args = e.Argument as object[];
             if (args == null)
                 return;
 
-            string[] pathList = args[0] as string[];
-            bool merge = (bool)args[1];
-            List<LogItem> res = new List<LogItem>();
-            int count = 0;
+            var pathList = args[0] as string[];
+            var merge = (bool)args[1];
+            var res = new List<LogItem>();
+            var count = 0;
 
             if (pathList != null)
             {
-                foreach (string path in pathList)
+                foreach (var path in pathList)
                 {
-                    if (String.IsNullOrWhiteSpace(path))
+                    if (string.IsNullOrWhiteSpace(path))
                         continue;
 
                     try
@@ -1259,11 +1298,12 @@ namespace JALV.ViewModel
                     }
                     catch (Exception ex)
                     {
-                        string message = String.Format((string)Resources.GlobalHelper_ParseLogFile_Error_Text, path, ex.Message);
-                        MessageBox.Show(message, Resources.GlobalHelper_ParseLogFile_Error_Title, MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                        var message = string.Format(Resources.GlobalHelper_ParseLogFile_Error_Text, path, ex.Message);
+                        MessageBox.Show(message, Resources.GlobalHelper_ParseLogFile_Error_Title, MessageBoxButton.OK,
+                            MessageBoxImage.Exclamation);
                     }
 
-                    BackgroundWorker worker = sender as BackgroundWorker;
+                    var worker = sender as BackgroundWorker;
                     if (worker != null && worker.CancellationPending)
                     {
                         e.Cancel = true;
@@ -1276,44 +1316,46 @@ namespace JALV.ViewModel
             if (count > 1)
             {
                 res = (from it in res
-                       orderby it.TimeStamp ascending
-                       select it).ToList<LogItem>();
+                    orderby it.TimeStamp
+                    select it).ToList();
 
-                int itemId = 1;
-                foreach (LogItem item in res)
+                var itemId = 1;
+                foreach (var item in res)
                     item.Id = itemId++;
             }
 
             e.Result = new object[] { res, merge };
         }
 
-        private void bkLoaderCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void BkLoaderCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             if (e.Error != null)
-                MessageBox.Show(String.Format(Resources.MainWindowVM_bkLoaderCompleted_UnreadableFile_Text, e.Error.ToString()), Resources.MainWindowVM_bkLoaderCompleted_UnreadableFile_Title, MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                MessageBox.Show(string.Format(Resources.MainWindowVM_bkLoaderCompleted_UnreadableFile_Text, e.Error),
+                    Resources.MainWindowVM_bkLoaderCompleted_UnreadableFile_Title, MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation);
             else
             {
                 if (!e.Cancelled && e.Result != null)
                 {
-                    object[] res = e.Result as object[];
-                    IList<LogItem> list = res[0] as IList<LogItem>;
-                    bool merge = (bool)res[1];
+                    var res = e.Result as object[];
+                    var list = res[0] as IList<LogItem>;
+                    var merge = (bool)res[1];
 
                     if (merge && Items.Count > 0)
                     {
                         //Merge result list with existing items
                         IList<LogItem> mergeList = new List<LogItem>(Items);
-                        int startId = mergeList.Count;
+                        var startId = mergeList.Count;
 
-                        foreach (LogItem item in list)
+                        foreach (var item in list)
                             mergeList.Add(item);
 
                         mergeList = (from it in mergeList
-                                     orderby it.TimeStamp ascending
-                                     select it).ToList<LogItem>();
+                            orderby it.TimeStamp
+                            select it).ToList();
 
-                        int itemId = 1;
-                        foreach (LogItem item in mergeList)
+                        var itemId = 1;
+                        foreach (var item in mergeList)
                             item.Id = itemId++;
 
                         list = mergeList;
@@ -1322,18 +1364,19 @@ namespace JALV.ViewModel
                     Items.Clear();
                     Items = new ObservableCollection<LogItem>(list);
 
-                    updateCounters();
+                    UpdateCounters();
 
                     if (Items.Count > 0)
                     {
                         var lastItem = (from it in Items
-                                        where levelCheckFilter(it)
-                                        select it).LastOrDefault<LogItem>();
+                            where LevelCheckFilter(it)
+                            select it).LastOrDefault();
 
                         SelectedLogItem = lastItem != null ? lastItem : Items[Items.Count - 1];
                     }
                 }
             }
+
             IsLoading = false;
         }
 
@@ -1350,26 +1393,37 @@ namespace JALV.ViewModel
         {
             if (GridManager != null)
             {
-                IList<ColumnItem> dgColumns = new List<ColumnItem>()
+                IList<ColumnItem> dgColumns = new List<ColumnItem>
                 {
-                    new ColumnItem("Id", 37, null, CellAlignment.CENTER,string.Empty){Header = Resources.MainWindowVM_InitDataGrid_IdColumn_Header},
-                    new ColumnItem("TimeStamp", 120, null, CellAlignment.CENTER, GlobalHelper.DisplayDateTimeFormat){Header = Resources.MainWindowVM_InitDataGrid_TimeStampColumn_Header},
-                    new ColumnItem("Level", null, 50, CellAlignment.CENTER){Header = Resources.MainWindowVM_InitDataGrid_LevelColumn_Header},
-                    new ColumnItem("Message", null, 300){Header = Resources.MainWindowVM_InitDataGrid_MessageColumn_Header},
-                    new ColumnItem("Logger", 150, null){Header = Resources.MainWindowVM_InitDataGrid_LoggerColumn_Header},
-                    new ColumnItem("MachineName", 110, null, CellAlignment.CENTER){Header = Resources.MainWindowVM_InitDataGrid_MachineNameColumn_Header},
-                    new ColumnItem("HostName", 110, null, CellAlignment.CENTER){Header = Resources.MainWindowVM_InitDataGrid_HostNameColumn_Header},
-                    new ColumnItem("UserName", 110, null, CellAlignment.CENTER){Header = Resources.MainWindowVM_InitDataGrid_UserNameColumn_Header},
-                    new ColumnItem("App", 150, null){Header = Resources.MainWindowVM_InitDataGrid_AppColumn_Header},
-                    new ColumnItem("Thread", 44, null, CellAlignment.CENTER){Header = Resources.MainWindowVM_InitDataGrid_ThreadColumn_Header},
-                    new ColumnItem("Class", null, 300){Header = Resources.MainWindowVM_InitDataGrid_ClassColumn_Header},
-                    new ColumnItem("Method", 200, null){Header = Resources.MainWindowVM_InitDataGrid_MethodColumn_Header}
+                    new ColumnItem("Id", 37, null, CellAlignment.Center, string.Empty)
+                        { Header = Resources.MainWindowVM_InitDataGrid_IdColumn_Header },
+                    new ColumnItem("TimeStamp", 120, null, CellAlignment.Center, GlobalHelper.DisplayDateTimeFormat)
+                        { Header = Resources.MainWindowVM_InitDataGrid_TimeStampColumn_Header },
+                    new ColumnItem("Level", null, 50, CellAlignment.Center)
+                        { Header = Resources.MainWindowVM_InitDataGrid_LevelColumn_Header },
+                    new ColumnItem("Message", null, 300)
+                        { Header = Resources.MainWindowVM_InitDataGrid_MessageColumn_Header },
+                    new ColumnItem("Logger", 150, null)
+                        { Header = Resources.MainWindowVM_InitDataGrid_LoggerColumn_Header },
+                    new ColumnItem("MachineName", 110, null, CellAlignment.Center)
+                        { Header = Resources.MainWindowVM_InitDataGrid_MachineNameColumn_Header },
+                    new ColumnItem("HostName", 110, null, CellAlignment.Center)
+                        { Header = Resources.MainWindowVM_InitDataGrid_HostNameColumn_Header },
+                    new ColumnItem("UserName", 110, null, CellAlignment.Center)
+                        { Header = Resources.MainWindowVM_InitDataGrid_UserNameColumn_Header },
+                    new ColumnItem("App", 150, null) { Header = Resources.MainWindowVM_InitDataGrid_AppColumn_Header },
+                    new ColumnItem("Thread", 44, null, CellAlignment.Center)
+                        { Header = Resources.MainWindowVM_InitDataGrid_ThreadColumn_Header },
+                    new ColumnItem("Class", null, 300)
+                        { Header = Resources.MainWindowVM_InitDataGrid_ClassColumn_Header },
+                    new ColumnItem("Method", 200, null)
+                        { Header = Resources.MainWindowVM_InitDataGrid_MethodColumn_Header }
                     //new ColumnItem("Delta", 60, null, CellAlignment.CENTER, null, "Δ"),
                     //new ColumnItem("Path", 50)
                 };
                 GridManager.BuildDataGrid(dgColumns);
-                GridManager.AssignSource(new Binding(MainWindowVM.PROP_Items) { Source = this, Mode = BindingMode.OneWay });
-                GridManager.OnBeforeCheckFilter = levelCheckFilter;
+                GridManager.AssignSource(new Binding(PropItems) { Source = this, Mode = BindingMode.OneWay });
+                GridManager.OnBeforeCheckFilter = LevelCheckFilter;
             }
         }
 
@@ -1377,33 +1431,34 @@ namespace JALV.ViewModel
         {
             if (GridManager != null)
             {
-                ICollectionView view = GridManager.GetCollectionView();
-                if (view != null)
-                    view.Refresh();
-                updateFilteredCounters(view);
+                var view = GridManager.GetCollectionView();
+                view?.Refresh();
+                UpdateFilteredCounters(view);
             }
-            raiseRefreshUI(NOTIFY_ScrollIntoView);
+
+            RaiseRefreshUi(NotifyScrollIntoView);
         }
 
-        private bool levelCheckFilter(object item)
+        private bool LevelCheckFilter(object item)
         {
-            LogItem logItem = item as LogItem;
+            var logItem = item as LogItem;
             if (logItem != null)
             {
                 switch (logItem.LevelIndex)
                 {
-                    case LevelIndex.DEBUG:
+                    case LevelIndex.Debug:
                         return ShowLevelDebug;
-                    case LevelIndex.INFO:
+                    case LevelIndex.Info:
                         return ShowLevelInfo;
-                    case LevelIndex.WARN:
+                    case LevelIndex.Warn:
                         return ShowLevelWarn;
-                    case LevelIndex.ERROR:
+                    case LevelIndex.Error:
                         return ShowLevelError;
-                    case LevelIndex.FATAL:
+                    case LevelIndex.Fatal:
                         return ShowLevelFatal;
                 }
             }
+
             return true;
         }
 
@@ -1416,219 +1471,230 @@ namespace JALV.ViewModel
         /// </summary>
         public int ItemsDebugCount
         {
-            get { return _itemsDebugCount; }
+            get => _itemsDebugCount;
             set
             {
                 _itemsDebugCount = value;
-                RaisePropertyChanged(PROP_ItemsDebugCount);
+                RaisePropertyChanged(PropItemsDebugCount);
             }
         }
+
         private int _itemsDebugCount;
-        public static string PROP_ItemsDebugCount = "ItemsDebugCount";
+        public static string PropItemsDebugCount = "ItemsDebugCount";
 
         /// <summary>
         /// ItemsInfoCount Property
         /// </summary>
         public int ItemsInfoCount
         {
-            get { return _itemsInfoCount; }
+            get => _itemsInfoCount;
             set
             {
                 _itemsInfoCount = value;
-                RaisePropertyChanged(PROP_ItemsInfoCount);
+                RaisePropertyChanged(PropItemsInfoCount);
             }
         }
+
         private int _itemsInfoCount;
-        public static string PROP_ItemsInfoCount = "ItemsInfoCount";
+        public static string PropItemsInfoCount = "ItemsInfoCount";
 
         /// <summary>
         /// ItemsWarnCount Property
         /// </summary>
         public int ItemsWarnCount
         {
-            get { return _itemsWarnCount; }
+            get => _itemsWarnCount;
             set
             {
                 _itemsWarnCount = value;
-                RaisePropertyChanged(PROP_ItemsWarnCount);
+                RaisePropertyChanged(PropItemsWarnCount);
             }
         }
+
         private int _itemsWarnCount;
-        public static string PROP_ItemsWarnCount = "ItemsWarnCount";
+        public static string PropItemsWarnCount = "ItemsWarnCount";
 
         /// <summary>
         /// ItemsErrorCount Property
         /// </summary>
         public int ItemsErrorCount
         {
-            get { return _itemsErrorCount; }
+            get => _itemsErrorCount;
             set
             {
                 _itemsErrorCount = value;
-                RaisePropertyChanged(PROP_ItemsErrorCount);
+                RaisePropertyChanged(PropItemsErrorCount);
             }
         }
+
         private int _itemsErrorCount;
-        public static string PROP_ItemsErrorCount = "ItemsErrorCount";
+        public static string PropItemsErrorCount = "ItemsErrorCount";
 
         /// <summary>
         /// ItemsFatalCount Property
         /// </summary>
         public int ItemsFatalCount
         {
-            get { return _itemsFatalCount; }
+            get => _itemsFatalCount;
             set
             {
                 _itemsFatalCount = value;
-                RaisePropertyChanged(PROP_ItemsFatalCount);
+                RaisePropertyChanged(PropItemsFatalCount);
             }
         }
+
         private int _itemsFatalCount;
-        public static string PROP_ItemsFatalCount = "ItemsFatalCount";
+        public static string PropItemsFatalCount = "ItemsFatalCount";
 
         /// <summary>
         /// ItemsDebugFilterCount Property
         /// </summary>
         public int ItemsDebugFilterCount
         {
-            get { return _itemsDebugFilterCount; }
+            get => _itemsDebugFilterCount;
             set
             {
                 _itemsDebugFilterCount = value;
-                RaisePropertyChanged(PROP_ItemsDebugFilterCount);
+                RaisePropertyChanged(PropItemsDebugFilterCount);
             }
         }
+
         private int _itemsDebugFilterCount;
-        public static string PROP_ItemsDebugFilterCount = "ItemsDebugFilterCount";
+        public static string PropItemsDebugFilterCount = "ItemsDebugFilterCount";
 
         /// <summary>
         /// ItemsInfoFilterCount Property
         /// </summary>
         public int ItemsInfoFilterCount
         {
-            get { return _itemsInfoFilterCount; }
+            get => _itemsInfoFilterCount;
             set
             {
                 _itemsInfoFilterCount = value;
-                RaisePropertyChanged(PROP_ItemsInfoFilterCount);
+                RaisePropertyChanged(PropItemsInfoFilterCount);
             }
         }
+
         private int _itemsInfoFilterCount;
-        public static string PROP_ItemsInfoFilterCount = "ItemsInfoFilterCount";
+        public static string PropItemsInfoFilterCount = "ItemsInfoFilterCount";
 
         /// <summary>
         /// ItemsWarnFilterCount Property
         /// </summary>
         public int ItemsWarnFilterCount
         {
-            get { return _itemsWarnFilterCount; }
+            get => _itemsWarnFilterCount;
             set
             {
                 _itemsWarnFilterCount = value;
-                RaisePropertyChanged(PROP_ItemsWarnFilterCount);
+                RaisePropertyChanged(PropItemsWarnFilterCount);
             }
         }
+
         private int _itemsWarnFilterCount;
-        public static string PROP_ItemsWarnFilterCount = "ItemsWarnFilterCount";
+        public static string PropItemsWarnFilterCount = "ItemsWarnFilterCount";
 
         /// <summary>
         /// ItemsErrorFilterCount Property
         /// </summary>
         public int ItemsErrorFilterCount
         {
-            get { return _itemsErrorFilterCount; }
+            get => _itemsErrorFilterCount;
             set
             {
                 _itemsErrorFilterCount = value;
-                RaisePropertyChanged(PROP_ItemsErrorFilterCount);
+                RaisePropertyChanged(PropItemsErrorFilterCount);
             }
         }
+
         private int _itemsErrorFilterCount;
-        public static string PROP_ItemsErrorFilterCount = "ItemsErrorFilterCount";
+        public static string PropItemsErrorFilterCount = "ItemsErrorFilterCount";
 
         /// <summary>
         /// ItemsFatalFilterCount Property
         /// </summary>
         public int ItemsFatalFilterCount
         {
-            get { return _itemsFatalFilterCount; }
+            get => _itemsFatalFilterCount;
             set
             {
                 _itemsFatalFilterCount = value;
-                RaisePropertyChanged(PROP_ItemsFatalFilterCount);
+                RaisePropertyChanged(PropItemsFatalFilterCount);
             }
         }
+
         private int _itemsFatalFilterCount;
-        public static string PROP_ItemsFatalFilterCount = "ItemsFatalFilterCount";
+        public static string PropItemsFatalFilterCount = "ItemsFatalFilterCount";
 
         /// <summary>
         /// ItemsFilterCount Property
         /// </summary>
         public int ItemsFilterCount
         {
-            get { return _itemsFilterCount; }
+            get => _itemsFilterCount;
             set
             {
                 _itemsFilterCount = value;
-                RaisePropertyChanged(PROP_ItemsFilterCount);
+                RaisePropertyChanged(PropItemsFilterCount);
             }
         }
-        private int _itemsFilterCount;
-        public static string PROP_ItemsFilterCount = "ItemsFilterCount";
 
-        private void updateCounters()
+        private int _itemsFilterCount;
+        public static string PropItemsFilterCount = "ItemsFilterCount";
+
+        private void UpdateCounters()
         {
             ItemsDebugCount = (from it in Items
-                               where it.Level.Equals("DEBUG", StringComparison.OrdinalIgnoreCase)
-                               select it).Count();
+                where it.Level.Equals("DEBUG", StringComparison.OrdinalIgnoreCase)
+                select it).Count();
 
             ItemsInfoCount = (from it in Items
-                              where it.Level.Equals("INFO", StringComparison.OrdinalIgnoreCase)
-                              select it).Count();
+                where it.Level.Equals("INFO", StringComparison.OrdinalIgnoreCase)
+                select it).Count();
 
             ItemsWarnCount = (from it in Items
-                              where it.Level.Equals("WARN", StringComparison.OrdinalIgnoreCase)
-                              select it).Count();
+                where it.Level.Equals("WARN", StringComparison.OrdinalIgnoreCase)
+                select it).Count();
 
             ItemsErrorCount = (from it in Items
-                               where it.Level.Equals("ERROR", StringComparison.OrdinalIgnoreCase)
-                               select it).Count();
+                where it.Level.Equals("ERROR", StringComparison.OrdinalIgnoreCase)
+                select it).Count();
 
             ItemsFatalCount = (from it in Items
-                               where it.Level.Equals("FATAL", StringComparison.OrdinalIgnoreCase)
-                               select it).Count();
+                where it.Level.Equals("FATAL", StringComparison.OrdinalIgnoreCase)
+                select it).Count();
 
             RefreshView();
         }
 
-        private void updateFilteredCounters(ICollectionView filteredList)
+        private void UpdateFilteredCounters(ICollectionView filteredList)
         {
             if (filteredList != null)
             {
-                IEnumerable<LogItem> fltList = filteredList.Cast<LogItem>();
+                var fltList = filteredList.Cast<LogItem>();
                 if (fltList != null)
                 {
                     ItemsFilterCount = fltList.Count();
 
                     ItemsDebugFilterCount = (from it in fltList
-                                             where it.Level.Equals("DEBUG", StringComparison.OrdinalIgnoreCase)
-                                             select it).Count();
+                        where it.Level.Equals("DEBUG", StringComparison.OrdinalIgnoreCase)
+                        select it).Count();
 
                     ItemsInfoFilterCount = (from it in fltList
-                                            where it.Level.Equals("INFO", StringComparison.OrdinalIgnoreCase)
-                                            select it).Count();
+                        where it.Level.Equals("INFO", StringComparison.OrdinalIgnoreCase)
+                        select it).Count();
 
                     ItemsWarnFilterCount = (from it in fltList
-                                            where it.Level.Equals("WARN", StringComparison.OrdinalIgnoreCase)
-                                            select it).Count();
+                        where it.Level.Equals("WARN", StringComparison.OrdinalIgnoreCase)
+                        select it).Count();
 
                     ItemsErrorFilterCount = (from it in fltList
-                                             where it.Level.Equals("ERROR", StringComparison.OrdinalIgnoreCase)
-                                             select it).Count();
+                        where it.Level.Equals("ERROR", StringComparison.OrdinalIgnoreCase)
+                        select it).Count();
 
                     ItemsFatalFilterCount = (from it in fltList
-                                             where it.Level.Equals("FATAL", StringComparison.OrdinalIgnoreCase)
-                                             select it).Count();
+                        where it.Level.Equals("FATAL", StringComparison.OrdinalIgnoreCase)
+                        select it).Count();
                 }
             }
             else
@@ -1642,7 +1708,6 @@ namespace JALV.ViewModel
             }
         }
 
-
         #endregion
 
         #region Auto Refresh
@@ -1652,11 +1717,11 @@ namespace JALV.ViewModel
         /// </summary>
         public bool IsAutoRefreshEnabled
         {
-            get { return _isAutoRefreshEnabled; }
+            get => _isAutoRefreshEnabled;
             set
             {
                 _isAutoRefreshEnabled = value;
-                RaisePropertyChanged(PROP_IsAutoRefreshEnabled);
+                RaisePropertyChanged(PropIsAutoRefreshEnabled);
 
                 if (_dispatcherTimer != null)
                 {
@@ -1667,37 +1732,35 @@ namespace JALV.ViewModel
                 }
             }
         }
+
         private bool _isAutoRefreshEnabled;
-        public static string PROP_IsAutoRefreshEnabled = "IsAutoRefreshEnabled";
+        public static string PropIsAutoRefreshEnabled = "IsAutoRefreshEnabled";
 
         /// <summary>
         /// AutoRefreshInterval Property
         /// </summary>
         public int AutoRefreshInterval
         {
-            get { return _autoRefreshInterval; }
+            get => _autoRefreshInterval;
             set
             {
                 _autoRefreshInterval = value;
-                RaisePropertyChanged(PROP_AutoRefreshInterval);
-                RaisePropertyChanged(PROP_AutoRefreshIntervalLocalized);
+                RaisePropertyChanged(PropAutoRefreshInterval);
+                RaisePropertyChanged(PropAutoRefreshIntervalLocalized);
                 if (_dispatcherTimer != null)
                     _dispatcherTimer.Interval = new TimeSpan(0, 0, _autoRefreshInterval);
             }
         }
+
         private int _autoRefreshInterval;
-        public static string PROP_AutoRefreshInterval = "AutoRefreshInterval";
+        public static string PropAutoRefreshInterval = "AutoRefreshInterval";
 
-        public string AutoRefreshIntervalLocalized
-        {
-            get
-            {
-                return String.Format(Resources.MainWindowVM_AutoRefreshIntervalLocalized_Format,
-                                     AutoRefreshInterval.ToString(System.Globalization.CultureInfo.GetCultureInfo(Properties.Resources.CultureName)));
-            }
+        public string AutoRefreshIntervalLocalized =>
+            string.Format(Resources.MainWindowVM_AutoRefreshIntervalLocalized_Format,
+                AutoRefreshInterval.ToString(
+                    System.Globalization.CultureInfo.GetCultureInfo(Resources.CultureName)));
 
-        }
-        public static string PROP_AutoRefreshIntervalLocalized = "AutoRefreshIntervalLocalized";
+        public static string PropAutoRefreshIntervalLocalized = "AutoRefreshIntervalLocalized";
 
 
         /// <summary>
@@ -1710,20 +1773,20 @@ namespace JALV.ViewModel
         /// </summary>
         public ICommandAncestor CommandDecreaseInterval { get; protected set; }
 
-        protected virtual object commandIncreaseIntervalExecute(object parameter)
+        protected virtual object CommandIncreaseIntervalExecute(object parameter)
         {
-            AutoRefreshInterval += Constants.DEFAULT_REFRESH_INTERVAL;
+            AutoRefreshInterval += Constants.DefaultRefreshInterval;
             return null;
         }
 
-        protected virtual object commandDecreaseIntervalExecute(object parameter)
+        protected virtual object CommandDecreaseIntervalExecute(object parameter)
         {
-            if (AutoRefreshInterval > Constants.DEFAULT_REFRESH_INTERVAL)
-                AutoRefreshInterval -= Constants.DEFAULT_REFRESH_INTERVAL;
+            if (AutoRefreshInterval > Constants.DefaultRefreshInterval)
+                AutoRefreshInterval -= Constants.DefaultRefreshInterval;
             return null;
         }
 
-        private DispatcherTimer _dispatcherTimer;
+        private readonly DispatcherTimer _dispatcherTimer;
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
@@ -1740,8 +1803,8 @@ namespace JALV.ViewModel
                     GlobalHelper.DoEvents();
 
                 var currentItem = (from it in Items
-                                   where DateTime.Compare(it.TimeStamp, currentLog.Value) == 0
-                                   select it).FirstOrDefault<LogItem>();
+                    where DateTime.Compare(it.TimeStamp, currentLog.Value) == 0
+                    select it).FirstOrDefault();
 
                 if (currentItem != null)
                     SelectedLogItem = currentItem;

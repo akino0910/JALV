@@ -9,7 +9,7 @@ namespace JALV.Core.Domain
     public class DisposableObject
         : IDisposable
     {
-        protected bool _disposed;
+        protected bool IsDisposed;
 
         public DisposableObject()
         {
@@ -34,15 +34,14 @@ namespace JALV.Core.Domain
             GC.SuppressFinalize(this);
 
             //Raise disposed event
-            if (Disposed != null)
-                Disposed();
+            Disposed?.Invoke();
         }
 
         protected void Dispose(bool disposing)
         {
             // If you need thread safety, use a lock around these 
             // operations, as well as in your methods that use the resource.
-            if (!_disposed)
+            if (!IsDisposed)
             {
                 if (disposing)
                 {
@@ -50,11 +49,13 @@ namespace JALV.Core.Domain
                 }
 
                 // Indicate that the instance has been disposed.
-                _disposed = true;
+                IsDisposed = true;
             }
         }
 
-        protected virtual void OnDispose() { }
+        protected virtual void OnDispose()
+        {
+        }
 
         public event Action Disposed = delegate { };
     }

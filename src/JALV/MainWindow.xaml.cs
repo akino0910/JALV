@@ -1,4 +1,5 @@
 ﻿#region About
+
 /*
  * JALV! - Yet Another Log4Net Viewer
  * 
@@ -13,6 +14,7 @@
  * Modifications Copyright: (c) 2019 Stefan Jarina
  * 
  */
+
 #endregion
 
 using System;
@@ -39,16 +41,16 @@ namespace JALV
             InitializeComponent();
 
             //Initialize and assign ViewModel
-            MainWindowVM _vm = new MainWindowVM(this);
-            _vm.GridManager = new FilteredGridManager(dgItems, txtSearchPanel, delegate (object sender, KeyEventArgs e)
+            MainWindowVm vm = new MainWindowVm(this);
+            vm.GridManager = new FilteredGridManager(dgItems, txtSearchPanel, delegate(object sender, KeyEventArgs e)
             {
                 if (e.OriginalSource is TextBox)
-                    _vm.RefreshView();
+                    vm.RefreshView();
             });
-            _vm.InitDataGrid();
-            _vm.RecentFileList = mainMenu.RecentFileList;
-            _vm.RefreshUI = OnRefreshUI;
-            this.DataContext = _vm;
+            vm.InitDataGrid();
+            vm.RecentFileList = mainMenu.RecentFileList;
+            vm.RefreshUi = OnRefreshUI;
+            this.DataContext = vm;
 
             //Assign events
             dgItems.SelectionChanged += dgItems_SelectionChanged;
@@ -57,13 +59,13 @@ namespace JALV
             this.Loaded += delegate
             {
                 if (args != null && args.Length > 0)
-                    _vm.LoadFileList(args);
+                    vm.LoadFileList(args);
             };
             this.Closing += delegate
             {
                 dgItems.SelectionChanged -= dgItems_SelectionChanged;
                 txtItemId.KeyUp -= txtItemId_KeyUp;
-                _vm.Dispose();
+                vm.Dispose();
             };
             this.Drop += (object sender, DragEventArgs e) =>
             {
@@ -71,27 +73,24 @@ namespace JALV
                 {
                     string[] pathList = (string[])e.Data.GetData(DataFormats.FileDrop);
                     bool add = e.KeyStates.HasFlag(DragDropKeyStates.ControlKey);
-                    _vm.LoadFileList(pathList, add);
+                    vm.LoadFileList(pathList, add);
                 }
             };
         }
 
-        public static System.Globalization.CultureInfo ResolvedCulture
-        {
-            get { return System.Globalization.CultureInfo.GetCultureInfo(Properties.Resources.CultureName); }
-        }
+        public static System.Globalization.CultureInfo ResolvedCulture => System.Globalization.CultureInfo.GetCultureInfo(Properties.Resources.CultureName);
 
         private void txtItemId_KeyUp(object sender, KeyEventArgs e)
         {
             if ((e.Key == Key.Enter || e.Key == Key.Return) && Keyboard.Modifiers == ModifierKeys.None)
             {
-                OnRefreshUI(MainWindowVM.NOTIFY_ScrollIntoView);
+                OnRefreshUI(MainWindowVm.NotifyScrollIntoView);
             }
         }
 
         private void dgItems_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            OnRefreshUI(MainWindowVM.NOTIFY_ScrollIntoView);
+            OnRefreshUI(MainWindowVm.NotifyScrollIntoView);
         }
 
         private void InitCulture()
@@ -114,12 +113,13 @@ namespace JALV
             {
                 switch (eventName)
                 {
-                    case MainWindowVM.NOTIFY_ScrollIntoView:
+                    case MainWindowVm.NotifyScrollIntoView:
                         if (dgItems != null && dgItems.SelectedItem != null)
                         {
                             dgItems.UpdateLayout();
                             dgItems.ScrollIntoView(dgItems.SelectedItem);
                         }
+
                         break;
                     default:
                         break;

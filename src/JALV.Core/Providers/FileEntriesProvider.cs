@@ -15,51 +15,51 @@ namespace JALV.Core.Providers
 
         public override IEnumerable<LogItem> GetEntries(string dataSource, FilterParams filter)
         {
-            if (String.IsNullOrEmpty(dataSource))
+            if (string.IsNullOrEmpty(dataSource))
                 throw new ArgumentNullException("dataSource");
             if (filter == null)
                 throw new ArgumentNullException("filter");
 
-            string pattern = filter.Pattern;
-            if (String.IsNullOrEmpty(pattern))
+            var pattern = filter.Pattern;
+            if (string.IsNullOrEmpty(pattern))
                 throw new NotValidValueException("filter pattern null");
 
-            FileInfo file = new FileInfo(dataSource);
+            var file = new FileInfo(dataSource);
             if (!file.Exists)
                 throw new FileNotFoundException("file not found", dataSource);
 
-            Regex regex = new Regex(@"%\b(date|message|level)\b");
-            MatchCollection matches = regex.Matches(pattern);
+            var regex = new Regex(@"%\b(date|message|level)\b");
+            var matches = regex.Matches(pattern);
 
-            using (StreamReader reader = file.OpenText())
+            using (var reader = file.OpenText())
             {
                 string s;
                 while ((s = reader.ReadLine()) != null)
                 {
-                    string[] items = s.Split(new[] { Separator }, StringSplitOptions.RemoveEmptyEntries);
-                    LogItem entry = CreateEntry(items, matches);
+                    var items = s.Split(new[] { Separator }, StringSplitOptions.RemoveEmptyEntries);
+                    var entry = CreateEntry(items, matches);
                     entry.Logger = filter.Logger;
                     yield return entry;
                 }
-            }            
+            }
         }
 
         private static LogItem CreateEntry(string[] items, MatchCollection matches)
         {
-            if (items == null) 
+            if (items == null)
                 throw new ArgumentNullException("items");
-            if (matches == null) 
+            if (matches == null)
                 throw new ArgumentNullException("matches");
 
             if (items.Length != matches.Count)
                 throw new NotValidValueException("different length of items/matches values");
 
-            LogItem entry = new LogItem();
-            for (int i = 0; i < matches.Count; i++)
+            var entry = new LogItem();
+            for (var i = 0; i < matches.Count; i++)
             {
-                string value = items[i];
-                Match match = matches[i];
-                string name = match.Value;
+                var value = items[i];
+                var match = matches[i];
+                var name = match.Value;
                 switch (name)
                 {
                     case "%date":
@@ -79,6 +79,7 @@ namespace JALV.Core.Providers
                         throw new ArgumentOutOfRangeException(name, "unmanaged value");
                 }
             }
+
             return entry;
         }
     }

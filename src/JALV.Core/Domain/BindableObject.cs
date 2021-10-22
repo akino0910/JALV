@@ -18,8 +18,8 @@ namespace JALV.Core.Domain
     public abstract class BindableObject
         : DisposableObject, INotifyPropertyChanged
     {
-        private static readonly Dictionary<string, PropertyChangedEventArgs> _eventArgCache;
-        private static readonly object _syncLock = new object();
+        private static readonly Dictionary<string, PropertyChangedEventArgs> EventArgCache;
+        private static readonly object SyncLock = new object();
 
         #region Constructors
 
@@ -29,8 +29,8 @@ namespace JALV.Core.Domain
         }
 
         static BindableObject()
-        {   
-            _eventArgCache = new Dictionary<string, PropertyChangedEventArgs>();
+        {
+            EventArgCache = new Dictionary<string, PropertyChangedEventArgs>();
         }
 
         #endregion // Constructors
@@ -44,7 +44,7 @@ namespace JALV.Core.Domain
         public virtual event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
-        /// Indica se è abilitata la notifica del cambiamento di proprietà
+        /// Indicates whether ownership change notification is enabled
         /// </summary>
         public virtual bool IsPropertyChangedEventEnabled { get; set; }
 
@@ -57,17 +57,18 @@ namespace JALV.Core.Domain
         /// </param>		
         public static PropertyChangedEventArgs GetPropertyChangedEventArgs(string propertyName)
         {
-            if (String.IsNullOrEmpty(propertyName))
+            if (string.IsNullOrEmpty(propertyName))
                 throw new ArgumentException("propertyName cannot be null or empty.");
 
             PropertyChangedEventArgs args;
-            lock (BindableObject._syncLock)
+            lock (SyncLock)
             {
-                if (!_eventArgCache.TryGetValue(propertyName, out args))
+                if (!EventArgCache.TryGetValue(propertyName, out args))
                 {
-                    _eventArgCache.Add(propertyName, args = new PropertyChangedEventArgs(propertyName));
+                    EventArgCache.Add(propertyName, args = new PropertyChangedEventArgs(propertyName));
                 }
             }
+
             return args;
         }
 
@@ -81,23 +82,24 @@ namespace JALV.Core.Domain
         /// </param>
         public virtual void RaisePropertyChanged(string propertyName)
         {
-            //Se non è abilitata la notifica del cambiamento di proprietà allora non faccio niente
+            // If ownership change notification is not enabled then I do nothing
             if (!IsPropertyChangedEventEnabled)
                 return;
 
-            this.VerifyProperty(propertyName);
+            VerifyProperty(propertyName);
 
-            PropertyChangedEventHandler handler = this.PropertyChanged;
+            var handler = PropertyChanged;
             if (handler != null)
             {
                 //Get the cached event args.
-                PropertyChangedEventArgs args =
+                var args =
                     GetPropertyChangedEventArgs(propertyName);
 
                 // Raise the PropertyChanged event.
                 handler(this, args);
             }
-            this.OnAfterPropertyChanged(propertyName);
+
+            OnAfterPropertyChanged(propertyName);
         }
 
         /// <summary>
@@ -108,7 +110,9 @@ namespace JALV.Core.Domain
         /// <param name="propertyName">
         /// The property which was changed.
         /// </param>
-        protected virtual void OnAfterPropertyChanged(string propertyName) { }
+        protected virtual void OnAfterPropertyChanged(string propertyName)
+        {
+        }
 
         #endregion
 
@@ -117,29 +121,25 @@ namespace JALV.Core.Domain
         [Conditional("DEBUG")]
         private void VerifyProperty(string propertyName)
         {
-            if (propertyName.IndexOf(".") >= 0)
+            if (propertyName.IndexOf(".", StringComparison.Ordinal) >= 0)
                 return;
 
             // Thanks to Rama Krishna Vavilala for the tip to use TypeDescriptor here, instead of manual
             // reflection, so that custom properties are honored too.
             // http://www.codeproject.com/KB/WPF/podder1.aspx?msg=2381272#xx2381272xx
 
-            bool propertyExists = TypeDescriptor.GetProperties(this).Find(propertyName, false) != null;
+            var propertyExists = TypeDescriptor.GetProperties(this).Find(propertyName, false) != null;
             if (!propertyExists)
             {
                 // The property could not be found,
                 // so alert the developer of the problem.
 
-                string msg = string.Format(
-                    "{0} is not a public property of {1}",
-                    propertyName,
-                    this.GetType().FullName);
+                var msg = $"{propertyName} is not a public property of {GetType().FullName}";
 
                 Debug.Fail(msg);
             }
         }
 
         #endregion
-
     }
 }

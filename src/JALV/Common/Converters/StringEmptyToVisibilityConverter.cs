@@ -15,13 +15,13 @@ namespace JALV.Common.Converters
             if (null == value)
                 return Visibility.Collapsed;
 
-            if (String.IsNullOrEmpty((string)value))
+            if (string.IsNullOrEmpty((string)value))
                 return Visibility.Collapsed;
-            else
-                return Visibility.Visible;
+            return Visibility.Visible;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter,
+            System.Globalization.CultureInfo culture)
         {
             return value;
         }

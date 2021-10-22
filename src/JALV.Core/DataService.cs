@@ -20,11 +20,12 @@ namespace JALV.Core
                 {
                     fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
                     streamWriter = new StreamWriter(fileStream);
-                    foreach (PathItem item in folders)
+                    foreach (var item in folders)
                     {
-                        string line = String.Format("<folder name=\"{0}\" path=\"{1}\" />", item.Name, item.Path);
+                        var line = $"<folder name=\"{item.Name}\" path=\"{item.Path}\" />";
                         streamWriter.WriteLine(line);
                     }
+
                     streamWriter.Close();
                     streamWriter = null;
                     fileStream.Close();
@@ -33,17 +34,15 @@ namespace JALV.Core
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.TraceError("Error saving Favorites list [{0}]:\r\n{1}\r\n{2}",path,ex.Message,ex.StackTrace);
+                System.Diagnostics.Trace.TraceError("Error saving Favorites list [{0}]:\r\n{1}\r\n{2}", path,
+                    ex.Message, ex.StackTrace);
                 throw;
             }
             finally
             {
-                if (streamWriter != null)
-                    streamWriter.Close();
-                if (fileStream != null)
-                    fileStream.Close();
+                streamWriter?.Close();
+                fileStream?.Close();
             }
-           
         }
 
         public static IList<PathItem> ParseFolderFile(string path)
@@ -52,13 +51,13 @@ namespace JALV.Core
             StreamReader streamReader = null;
             try
             {
-                FileInfo fileInfo = new FileInfo(path);
+                var fileInfo = new FileInfo(path);
                 if (!fileInfo.Exists)
                     return null;
 
                 fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 streamReader = new StreamReader(fileStream, true);
-                string sBuffer = String.Format("<root>{0}</root>", streamReader.ReadToEnd());
+                var sBuffer = $"<root>{streamReader.ReadToEnd()}</root>";
                 streamReader.Close();
                 streamReader = null;
                 fileStream.Close();
@@ -70,31 +69,30 @@ namespace JALV.Core
                 IList<PathItem> result = new List<PathItem>();
                 while (xmlTextReader.Read())
                 {
-                    if ((xmlTextReader.NodeType != XmlNodeType.Element) || (xmlTextReader.Name != "folder"))
+                    if (xmlTextReader.NodeType != XmlNodeType.Element || xmlTextReader.Name != "folder")
                         continue;
 
-                    PathItem item = new PathItem(xmlTextReader.GetAttribute("name"), xmlTextReader.GetAttribute("path"));
+                    var item = new PathItem(xmlTextReader.GetAttribute("name"), xmlTextReader.GetAttribute("path"));
                     result.Add(item);
                 }
+
                 return result;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.TraceError("Error parsing Favorites list [{0}]:\r\n{1}\r\n{2}", path, ex.Message, ex.StackTrace);
+                System.Diagnostics.Trace.TraceError("Error parsing Favorites list [{0}]:\r\n{1}\r\n{2}", path,
+                    ex.Message, ex.StackTrace);
                 throw;
             }
             finally
             {
-                if (streamReader != null)
-                    streamReader.Close();
-                if (fileStream != null)
-                    fileStream.Close();
+                streamReader?.Close();
+                fileStream?.Close();
             }
         }
 
         public static IList<LogItem> ParseLogFile(string path)
         {
-            IEnumerable<LogItem> result = null;
             try
             {
                 AbstractEntriesProvider provider;
@@ -108,12 +106,13 @@ namespace JALV.Core
                     provider = EntriesProviderFactory.GetProvider();
                 }
 
-                result = provider.GetEntries(path);
+                var result = provider.GetEntries(path);
                 return result.ToList();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.TraceError("Error parsing log file [{0}]:\r\n{1}\r\n{2}", path, ex.Message, ex.StackTrace);
+                System.Diagnostics.Trace.TraceError("Error parsing log file [{0}]:\r\n{1}\r\n{2}", path, ex.Message,
+                    ex.StackTrace);
                 throw;
             }
         }

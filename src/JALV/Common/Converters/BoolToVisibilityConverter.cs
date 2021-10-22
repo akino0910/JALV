@@ -19,11 +19,11 @@ namespace JALV.Common.Converters
 
             if ((bool)value)
                 return Visibility.Visible;
-            else
-                return Visibility.Collapsed;
+            return Visibility.Collapsed;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter,
+            System.Globalization.CultureInfo culture)
         {
             return value;
         }

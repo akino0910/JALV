@@ -7,7 +7,9 @@ namespace JALV.Core.Domain
     {
         public int Id { get; set; }
         public string Path { get; set; }
+
         public DateTime TimeStamp { get; set; }
+
         //public string Delta { get; set; }
         public double? Delta { get; set; }
         public string Logger { get; set; }
@@ -35,13 +37,13 @@ namespace JALV.Core.Domain
         /// </summary>
         public string Level
         {
-            get { return _level; }
+            get => _level;
             set
             {
                 if (value != _level)
                 {
                     _level = value;
-                    assignLevelIndex(_level);
+                    AssignLevelIndex(_level);
                 }
             }
         }
@@ -50,28 +52,28 @@ namespace JALV.Core.Domain
 
         private string _level;
 
-        private void assignLevelIndex(string level)
+        private void AssignLevelIndex(string level)
         {
-            string ul = !String.IsNullOrWhiteSpace(level) ? level.Trim().ToUpper() : string.Empty;
+            var ul = !string.IsNullOrWhiteSpace(level) ? level.Trim().ToUpper() : string.Empty;
             switch (ul)
             {
                 case "DEBUG":
-                    LevelIndex = LevelIndex.DEBUG;
+                    LevelIndex = LevelIndex.Debug;
                     break;
                 case "INFO":
-                    LevelIndex =  LevelIndex.INFO;
+                    LevelIndex = LevelIndex.Info;
                     break;
                 case "WARN":
-                    LevelIndex =  LevelIndex.WARN;
+                    LevelIndex = LevelIndex.Warn;
                     break;
                 case "ERROR":
-                    LevelIndex =  LevelIndex.ERROR;
+                    LevelIndex = LevelIndex.Error;
                     break;
                 case "FATAL":
-                    LevelIndex =  LevelIndex.FATAL;
+                    LevelIndex = LevelIndex.Fatal;
                     break;
                 default:
-                    LevelIndex =  LevelIndex.NONE;
+                    LevelIndex = LevelIndex.None;
                     break;
             }
         }
@@ -81,11 +83,11 @@ namespace JALV.Core.Domain
 
     public enum LevelIndex
     {
-        NONE = 0,
-        DEBUG = 1,
-        INFO = 2,
-        WARN = 3,
-        ERROR = 4,
-        FATAL = 5
+        None = 0,
+        Debug = 1,
+        Info = 2,
+        Warn = 3,
+        Error = 4,
+        Fatal = 5
     }
 }

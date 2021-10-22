@@ -1,65 +1,68 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
-
 using JALV.Core.Domain;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace JALV.Core.Providers
 {
-    class JsonEntriesProvider : AbstractEntriesProvider
+    internal class JsonEntriesProvider : AbstractEntriesProvider
     {
         public override IEnumerable<LogItem> GetEntries(string dataSource, FilterParams filter)
         {
             var entryId = 1;
 
-            FileStream fs = new FileStream(dataSource, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            StreamReader sr = new StreamReader(fs);
+            var fs = new FileStream(dataSource, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            var sr = new StreamReader(fs);
 
             while (!sr.EndOfStream)
             {
                 var line = sr.ReadLine();
                 var lineObject = JsonConvert.DeserializeObject<JObject>(line);
 
-                string[] dateFormats = { "MM/dd/yyyy HH:mm:ss",
+                string[] dateFormats =
+                {
+                    "MM/dd/yyyy HH:mm:ss",
                     "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd HH:mm:ssZ",
                     "yyyy-MM-ddTHH:mm:ss.fffZ", "yyyy-MM-dd HH:mm:ss.fffZ",
-                    "yyyy-MM-ddTHH:mm:ss,fffZ", "yyyy-MM-dd HH:mm:ss,fffZ"  };
-                var dateString = lineObject.SelectToken("date")?.Value<String>() ?? "";
+                    "yyyy-MM-ddTHH:mm:ss,fffZ", "yyyy-MM-dd HH:mm:ss,fffZ",
+                    "yyyy-MM-dd HH:mm:ss.fff", "yyyy-MM-dd HH:mm:ss,fff"
+                };
+                var dateString = lineObject?.SelectToken("date")?.Value<string>() ?? "";
                 DateTime timestamp;
                 try
                 {
-                    timestamp = DateTime.ParseExact(dateString, dateFormats, new CultureInfo("en-US"), DateTimeStyles.None);
+                    timestamp = DateTime.ParseExact(dateString, dateFormats, new CultureInfo("en-US"),
+                        DateTimeStyles.None);
                 }
                 catch (FormatException)
                 {
                     timestamp = new DateTime();
                 }
 
-                LogItem entry = new LogItem()
+                var entry = new LogItem
                 {
                     File = dataSource,
-                    Message = lineObject.SelectToken("message")?.Value<String>() ?? "",
+                    Message = lineObject.SelectToken("message")?.Value<string>() ?? "",
                     TimeStamp = timestamp,
-                    Level = lineObject.SelectToken("level")?.Value<String>().ToUpper() ?? "",
-                    App = lineObject.SelectToken("appname")?.Value<String>() ?? "",
-                    Logger = lineObject.SelectToken("instanceId")?.Value<String>() ?? "",
-                    RequestId = lineObject.SelectToken("requestId")?.Value<String>() ?? "",
-                    Thread = lineObject.SelectToken("thread")?.Value<String>() ?? "",
-                    UserName = lineObject.SelectToken("user")?.Value<String>() ?? "",
-                    HostName = lineObject.SelectToken("hostname")?.Value<String>() ?? "",
-                    Throwable = lineObject.SelectToken("exception")?.Value<String>() ?? "",
-                    Class = lineObject.SelectToken("logger")?.Value<String>() ?? "",
-                    Method = lineObject.SelectToken("method")?.Value<String>() ?? "",
+                    Level = lineObject.SelectToken("level")?.Value<string>()?.ToUpper() ?? "",
+                    App = lineObject.SelectToken("appName")?.Value<string>() ?? "",
+                    Logger = lineObject.SelectToken("instanceId")?.Value<string>() ?? "",
+                    RequestId = lineObject.SelectToken("requestId")?.Value<string>() ?? "",
+                    Thread = lineObject.SelectToken("thread")?.Value<string>() ?? "",
+                    UserName = lineObject.SelectToken("user")?.Value<string>() ?? "",
+                    MachineName = lineObject.SelectToken("machineName")?.Value<string>() ?? "",
+                    HostName = lineObject.SelectToken("hostname")?.Value<string>() ?? "",
+                    Throwable = lineObject.SelectToken("exception")?.Value<string>() ?? "",
+                    Class = lineObject.SelectToken("logger")?.Value<string>() ?? "",
+                    Method = lineObject.SelectToken("method")?.Value<string>() ?? "",
                     Id = entryId,
                     Path = dataSource
                 };
 
-                if (filterByParameters(entry, filter))
+                if (FilterByParameters(entry, filter))
                 {
                     yield return entry;
                     entryId++;
@@ -67,39 +70,39 @@ namespace JALV.Core.Providers
             }
         }
 
-        private static bool filterByParameters(LogItem entry, FilterParams parameters)
+        private static bool FilterByParameters(LogItem entry, FilterParams parameters)
         {
             if (entry == null)
                 throw new ArgumentNullException("entry");
             if (parameters == null)
                 throw new ArgumentNullException("parameters");
 
-            bool accept = false;
+            var accept = false;
             switch (parameters.Level)
             {
                 case 1:
-                    accept |= String.Equals(entry.Level, "ERROR",
+                    accept |= string.Equals(entry.Level, "ERROR",
                         StringComparison.InvariantCultureIgnoreCase);
                     break;
 
                 case 2:
-                    if (String.Equals(entry.Level, "INFO",
+                    if (string.Equals(entry.Level, "INFO",
                         StringComparison.InvariantCultureIgnoreCase))
                         accept = true;
                     break;
 
                 case 3:
-                    if (String.Equals(entry.Level, "DEBUG",
+                    if (string.Equals(entry.Level, "DEBUG",
                         StringComparison.InvariantCultureIgnoreCase))
                         accept = true;
                     break;
                 case 4:
-                    if (String.Equals(entry.Level, "WARN",
+                    if (string.Equals(entry.Level, "WARN",
                         StringComparison.InvariantCultureIgnoreCase))
                         accept = true;
                     break;
                 case 5:
-                    if (String.Equals(entry.Level, "FATAL",
+                    if (string.Equals(entry.Level, "FATAL",
                         StringComparison.InvariantCultureIgnoreCase))
                         accept = true;
                     break;
@@ -113,15 +116,15 @@ namespace JALV.Core.Providers
                 if (entry.TimeStamp < parameters.Date)
                     accept = false;
 
-            if (!String.IsNullOrEmpty(parameters.Thread))
-                if (!String.Equals(entry.Thread, parameters.Thread, StringComparison.InvariantCultureIgnoreCase))
+            if (!string.IsNullOrEmpty(parameters.Thread))
+                if (!string.Equals(entry.Thread, parameters.Thread, StringComparison.InvariantCultureIgnoreCase))
                     accept = false;
 
-            if (!String.IsNullOrEmpty(parameters.Message))
+            if (!string.IsNullOrEmpty(parameters.Message))
                 if (!entry.Message.ToUpper().Contains(parameters.Message.ToUpper()))
                     accept = false;
 
-            if (!String.IsNullOrEmpty(parameters.Logger))
+            if (!string.IsNullOrEmpty(parameters.Logger))
                 if (!entry.Logger.ToUpper().Contains(parameters.Logger.ToUpper()))
                     accept = false;
 

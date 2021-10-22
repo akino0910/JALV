@@ -12,11 +12,11 @@ namespace JALV
         {
             base.OnStartup(e);
 
-            int? framerate = FrameRateHelper.DesiredFrameRate;
-            BusyIndicatorBehavior.FRAMERATE = framerate;
+            var framerate = FrameRateHelper.DesiredFrameRate;
+            BusyIndicatorBehavior.Framerate = framerate;
             FrameRateHelper.SetTimelineDefaultFramerate(framerate);
 
-            (new MainWindow(e.Args)).Show();
+            new MainWindow(e.Args).Show();
         }
     }
 }

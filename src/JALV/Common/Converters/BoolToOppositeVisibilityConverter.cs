@@ -17,12 +17,11 @@ namespace JALV.Common.Converters
             if (null == value)
                 return Visibility.Collapsed;
 
-            bool oppositeValue = !(bool)value;
+            var oppositeValue = !(bool)value;
 
-            if ((bool)oppositeValue)
+            if (oppositeValue)
                 return Visibility.Visible;
-            else
-                return Visibility.Collapsed;
+            return Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

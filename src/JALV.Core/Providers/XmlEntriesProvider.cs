@@ -6,14 +6,14 @@ using JALV.Core.Domain;
 
 namespace JALV.Core.Providers
 {
-    class XmlEntriesProvider : AbstractEntriesProvider
+    internal class XmlEntriesProvider : AbstractEntriesProvider
     {
         public override IEnumerable<LogItem> GetEntries(string dataSource, FilterParams filter)
         {
             var settings = new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment };
             var nt = new NameTable();
             var mgr = new XmlNamespaceManager(nt);
-            mgr.AddNamespace("log4j", Constants.LAYOUT_LOG4J);
+            mgr.AddNamespace("log4j", Constants.LayoutLog4J);
             var pc = new XmlParserContext(nt, mgr, string.Empty, XmlSpace.Default);
             var date = new DateTime(1970, 1, 1, 0, 0, 0, 0);
 
@@ -27,14 +27,17 @@ namespace JALV.Core.Providers
                         DateTime? prevTimeStamp = null;
                         while (xmlTextReader.Read())
                         {
-                            if ((xmlTextReader.NodeType != XmlNodeType.Element) || (xmlTextReader.Name != "log4j:event"))
+                            if (xmlTextReader.NodeType != XmlNodeType.Element || xmlTextReader.Name != "log4j:event")
                                 continue;
 
-                            var entry = new LogItem { Id = entryId, Path = dataSource };
+                            var entry = new LogItem
+                            {
+                                Id = entryId, Path = dataSource,
+                                Logger = xmlTextReader.GetAttribute("logger"),
+                                TimeStamp = date.AddMilliseconds(Convert.ToDouble(xmlTextReader.GetAttribute("timestamp")))
+                                    .ToLocalTime()
+                            };
 
-                            entry.Logger = xmlTextReader.GetAttribute("logger");
-
-                            entry.TimeStamp = date.AddMilliseconds(Convert.ToDouble(xmlTextReader.GetAttribute("timestamp"))).ToLocalTime();
                             if (prevTimeStamp.HasValue)
                                 entry.Delta = (entry.TimeStamp - prevTimeStamp.Value).TotalSeconds;
                             prevTimeStamp = entry.TimeStamp;
@@ -53,42 +56,45 @@ namespace JALV.Core.Providers
                                     default:
                                         switch (xmlTextReader.Name)
                                         {
-                                            case ("log4j:message"):
+                                            case "log4j:message":
                                                 entry.Message = xmlTextReader.ReadString();
                                                 break;
-                                            case ("log4j:data"):
+                                            case "log4j:data":
                                                 switch (xmlTextReader.GetAttribute("name"))
                                                 {
-                                                    case ("log4net:UserName"):
+                                                    case "log4net:UserName":
                                                         entry.UserName = xmlTextReader.GetAttribute("value");
                                                         break;
-                                                    case ("log4japp"):
+                                                    case "log4japp":
                                                         entry.App = xmlTextReader.GetAttribute("value");
                                                         break;
-                                                    case ("log4jmachinename"):
+                                                    case "log4jmachinename":
                                                         entry.MachineName = xmlTextReader.GetAttribute("value");
                                                         break;
-                                                    case ("log4net:HostName"):
+                                                    case "log4net:HostName":
                                                         entry.HostName = xmlTextReader.GetAttribute("value");
                                                         break;
                                                 }
+
                                                 break;
-                                            case ("log4j:throwable"):
+                                            case "log4j:throwable":
                                                 entry.Throwable = xmlTextReader.ReadString();
                                                 break;
-                                            case ("log4j:locationInfo"):
+                                            case "log4j:locationInfo":
                                                 entry.Class = xmlTextReader.GetAttribute("class");
                                                 entry.Method = xmlTextReader.GetAttribute("method");
                                                 entry.File = xmlTextReader.GetAttribute("file");
                                                 entry.Line = xmlTextReader.GetAttribute("line");
                                                 break;
                                         }
+
                                         break;
                                 }
+
                                 if (breakLoop) break;
                             }
 
-                            if (filterByParameters(entry, filter))
+                            if (FilterByParameters(entry, filter))
                             {
                                 yield return entry;
                                 entryId++;
@@ -99,42 +105,42 @@ namespace JALV.Core.Providers
             }
         }
 
-        private static bool filterByParameters(LogItem entry, FilterParams parameters)
+        private static bool FilterByParameters(LogItem entry, FilterParams parameters)
         {
             if (entry == null)
                 throw new ArgumentNullException("entry");
             if (parameters == null)
                 throw new ArgumentNullException("parameters");
 
-            bool accept = false;
+            var accept = false;
             switch (parameters.Level)
             {
                 case 1:
-                    if (String.Equals(entry.Level, "ERROR",
+                    if (string.Equals(entry.Level, "ERROR",
                         StringComparison.InvariantCultureIgnoreCase))
                         accept = true;
                     break;
 
                 case 2:
-                    if (String.Equals(entry.Level, "INFO",
+                    if (string.Equals(entry.Level, "INFO",
                         StringComparison.InvariantCultureIgnoreCase))
                         accept = true;
                     break;
 
                 case 3:
-                    if (String.Equals(entry.Level, "DEBUG",
+                    if (string.Equals(entry.Level, "DEBUG",
                         StringComparison.InvariantCultureIgnoreCase))
                         accept = true;
                     break;
 
                 case 4:
-                    if (String.Equals(entry.Level, "WARN",
+                    if (string.Equals(entry.Level, "WARN",
                         StringComparison.InvariantCultureIgnoreCase))
                         accept = true;
                     break;
 
                 case 5:
-                    if (String.Equals(entry.Level, "FATAL",
+                    if (string.Equals(entry.Level, "FATAL",
                         StringComparison.InvariantCultureIgnoreCase))
                         accept = true;
                     break;
@@ -148,15 +154,15 @@ namespace JALV.Core.Providers
                 if (entry.TimeStamp < parameters.Date)
                     accept = false;
 
-            if (!String.IsNullOrEmpty(parameters.Thread))
-                if (!String.Equals(entry.Thread, parameters.Thread, StringComparison.InvariantCultureIgnoreCase))
+            if (!string.IsNullOrEmpty(parameters.Thread))
+                if (!string.Equals(entry.Thread, parameters.Thread, StringComparison.InvariantCultureIgnoreCase))
                     accept = false;
 
-            if (!String.IsNullOrEmpty(parameters.Message))
+            if (!string.IsNullOrEmpty(parameters.Message))
                 if (!entry.Message.ToUpper().Contains(parameters.Message.ToUpper()))
                     accept = false;
 
-            if (!String.IsNullOrEmpty(parameters.Logger))
+            if (!string.IsNullOrEmpty(parameters.Logger))
                 if (!entry.Logger.ToUpper().Contains(parameters.Logger.ToUpper()))
                     accept = false;
 

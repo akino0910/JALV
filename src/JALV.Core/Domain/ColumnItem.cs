@@ -13,7 +13,7 @@ namespace JALV.Core.Domain
         public CellAlignment Alignment { get; set; }
 
         public ColumnItem(string field, double? minWidth, double? width)
-            : this(field, minWidth, width, CellAlignment.DEFAULT, string.Empty, field)
+            : this(field, minWidth, width, CellAlignment.Default, string.Empty, field)
         {
         }
 
@@ -27,7 +27,8 @@ namespace JALV.Core.Domain
         {
         }
 
-        public ColumnItem(string field, double? minWidth, double? width, CellAlignment align, string stringFormat, string header)
+        public ColumnItem(string field, double? minWidth, double? width, CellAlignment align, string stringFormat,
+            string header)
         {
             Field = field;
             MinWidth = minWidth;
@@ -40,7 +41,7 @@ namespace JALV.Core.Domain
 
     public enum CellAlignment
     {
-        DEFAULT = 0,
-        CENTER = 1
+        Default = 0,
+        Center = 1
     }
 }

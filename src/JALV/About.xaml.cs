@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Windows;
-using System;
 
 namespace JALV
 {
@@ -13,11 +12,12 @@ namespace JALV
         {
             InitializeComponent();
 
-            FileVersionInfo verInfo = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            string version = String.Format(Properties.Resources.About_Version_Text, verInfo != null ? verInfo.FileVersion : "---");
+            var verInfo = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var version = string.Format(Properties.Resources.About_Version_Text,
+                verInfo != null ? verInfo.FileVersion : "---");
             lblVersion.Text = version;
 
-            string config1 = @"<log4net>
+            var config1 = @"<log4net>
     <appender name=""FileAppenderXml"" type=""log4net.Appender.FileAppender"">
         <file type=""log4net.Util.PatternString"" value=""sample-log.xml""/>
         <appendToFile value=""true""/>        
@@ -36,7 +36,7 @@ namespace JALV
 </log4net>";
             tbConfig1.Text = config1;
 
-            string config2 = @"<log4net>
+            var config2 = @"<log4net>
     <appender name=""RollingFileAppenderXml"" type=""log4net.Appender.RollingFileAppender"">
         <file type=""log4net.Util.PatternString"" value=""sample-log.xml""/>
         <appendToFile value=""true""/>

@@ -17,14 +17,15 @@ namespace JALV
 
         public bool EditList()
         {
-            bool res = false;
-            AddFolderPathVM _vm = new AddFolderPathVM(this);
-            using (_vm)
+            var res = false;
+            var vm = new AddFolderPathVm(this);
+            using (vm)
             {
-                this.DataContext = _vm;
-                this.ShowDialog();
-                res = _vm.ListChanged;
+                DataContext = vm;
+                ShowDialog();
+                res = vm.ListChanged;
             }
+
             return res;
         }
     }

@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using JALV.Core;
 using JALV.Core.Domain;
 
 namespace JALV.Common
@@ -16,38 +15,37 @@ namespace JALV.Common
     {
         public FilteredGridManagerBase(DataGrid dg, Panel txtSearchPanel, KeyEventHandler keyUpEvent)
         {
-            _dg = dg;
-            _txtSearchPanel = txtSearchPanel;
-            _keyUpEvent = keyUpEvent;
-            _filterPropertyList = new List<string>();
-            _txtCache = new Hashtable();
+            Dg = dg;
+            TxtSearchPanel = txtSearchPanel;
+            KeyUpEvent = keyUpEvent;
+            FilterPropertyList = new List<string>();
+            TxtCache = new Hashtable();
             IsFilteringEnabled = true;
         }
 
         protected override void OnDispose()
         {
             ClearCache();
-            if (_filterPropertyList != null)
-                _filterPropertyList.Clear();
-            if (_dg != null)
-                _dg.Columns.Clear();
-            if (_cvs != null)
+            FilterPropertyList?.Clear();
+            Dg?.Columns.Clear();
+            if (Cvs != null)
             {
-                if (_cvs.View != null)
-                    _cvs.View.Filter = null;
-                BindingOperations.ClearAllBindings(_cvs);
+                if (Cvs.View != null)
+                    Cvs.View.Filter = null;
+                BindingOperations.ClearAllBindings(Cvs);
             }
+
             base.OnDispose();
         }
 
         #region Private Properties
 
-        protected IList<string> _filterPropertyList;
-        protected DataGrid _dg;
-        protected Panel _txtSearchPanel;
-        protected KeyEventHandler _keyUpEvent;
-        protected CollectionViewSource _cvs;
-        protected Hashtable _txtCache;
+        protected IList<string> FilterPropertyList;
+        protected DataGrid Dg;
+        protected Panel TxtSearchPanel;
+        protected KeyEventHandler KeyUpEvent;
+        protected CollectionViewSource Cvs;
+        protected Hashtable TxtCache;
 
         #endregion
 
@@ -55,42 +53,44 @@ namespace JALV.Common
 
         public virtual void AssignSource(Binding sourceBind)
         {
-            if (_cvs == null)
-                _cvs = new CollectionViewSource();
+            if (Cvs == null)
+                Cvs = new CollectionViewSource();
             else
-                BindingOperations.ClearBinding(_cvs, CollectionViewSource.SourceProperty);
+                BindingOperations.ClearBinding(Cvs, CollectionViewSource.SourceProperty);
 
-            BindingOperations.SetBinding(_cvs, CollectionViewSource.SourceProperty, sourceBind);
-            BindingOperations.ClearBinding(_dg, DataGrid.ItemsSourceProperty);
-            Binding bind = new Binding() { Source = _cvs, Mode = BindingMode.OneWay };
-            _dg.SetBinding(DataGrid.ItemsSourceProperty, bind);
+            BindingOperations.SetBinding(Cvs, CollectionViewSource.SourceProperty, sourceBind);
+            BindingOperations.ClearBinding(Dg, ItemsControl.ItemsSourceProperty);
+            var bind = new Binding { Source = Cvs, Mode = BindingMode.OneWay };
+            Dg.SetBinding(ItemsControl.ItemsSourceProperty, bind);
         }
 
         public ICollectionView GetCollectionView()
         {
-            if (_cvs != null)
+            if (Cvs != null)
             {
                 //Assign filter method
-                if (_cvs.View != null && _cvs.View.Filter == null)
+                if (Cvs.View != null && Cvs.View.Filter == null)
                 {
                     IsFilteringEnabled = false;
-                    _cvs.View.Filter = itemCheckFilter;
+                    Cvs.View.Filter = ItemCheckFilter;
                     IsFilteringEnabled = true;
                 }
-                return _cvs.View;
+
+                return Cvs.View;
             }
+
             return null;
         }
 
         public void ResetSearchTextBox()
         {
-            if (_filterPropertyList != null && _txtSearchPanel != null)
+            if (FilterPropertyList != null && TxtSearchPanel != null)
             {
                 //Clear all textbox text
-                foreach (string prop in _filterPropertyList)
+                foreach (var prop in FilterPropertyList)
                 {
-                    TextBox txt = _txtSearchPanel.FindName(getTextBoxName(prop)) as TextBox;
-                    if (txt != null & !string.IsNullOrEmpty(txt.Text))
+                    var txt = TxtSearchPanel.FindName(GetTextBoxName(prop)) as TextBox;
+                    if ((txt != null) & !string.IsNullOrEmpty(txt.Text))
                         txt.Text = string.Empty;
                 }
             }
@@ -98,8 +98,7 @@ namespace JALV.Common
 
         public void ClearCache()
         {
-            if (_txtCache != null)
-                _txtCache.Clear();
+            TxtCache?.Clear();
         }
 
         public Func<object, bool> OnBeforeCheckFilter;
@@ -112,14 +111,14 @@ namespace JALV.Common
 
         #region Private Methods
 
-        protected string getTextBoxName(string prop)
+        protected string GetTextBoxName(string prop)
         {
-            return string.Format("txtFilter{0}", prop).Replace(".", "");
+            return $"txtFilter{prop}".Replace(".", "");
         }
 
-        protected bool itemCheckFilter(object item)
+        protected bool ItemCheckFilter(object item)
         {
-            bool res = true;
+            var res = true;
 
             if (!IsFilteringEnabled)
                 return res;
@@ -132,18 +131,18 @@ namespace JALV.Common
                 if (!res)
                     return res;
 
-                if (_filterPropertyList != null && _txtSearchPanel != null)
+                if (FilterPropertyList != null && TxtSearchPanel != null)
                 {
                     //Check each filter property
-                    foreach (string prop in _filterPropertyList)
+                    foreach (var prop in FilterPropertyList)
                     {
                         TextBox txt = null;
-                        if (_txtCache.ContainsKey(prop))
-                            txt = _txtCache[prop] as TextBox;
+                        if (TxtCache.ContainsKey(prop))
+                            txt = TxtCache[prop] as TextBox;
                         else
                         {
-                            txt = _txtSearchPanel.FindName(getTextBoxName(prop)) as TextBox;
-                            _txtCache[prop] = txt;
+                            txt = TxtSearchPanel.FindName(GetTextBoxName(prop)) as TextBox;
+                            TxtCache[prop] = txt;
                         }
 
                         res = false;
@@ -158,16 +157,18 @@ namespace JALV.Common
                                 try
                                 {
                                     //Get property value
-                                    object val = getItemValue(item, prop);
+                                    var val = GetItemValue(item, prop);
                                     if (val != null)
                                     {
-                                        string valToCompare = string.Empty;
+                                        var valToCompare = string.Empty;
                                         if (val is DateTime)
-                                            valToCompare = ((DateTime)val).ToString(GlobalHelper.DisplayDateTimeFormat, System.Globalization.CultureInfo.GetCultureInfo(Properties.Resources.CultureName));
+                                            valToCompare = ((DateTime)val).ToString(GlobalHelper.DisplayDateTimeFormat,
+                                                System.Globalization.CultureInfo.GetCultureInfo(Properties.Resources
+                                                    .CultureName));
                                         else
                                             valToCompare = val.ToString();
 
-                                        if (valToCompare.ToString().IndexOf(txt.Text, StringComparison.OrdinalIgnoreCase) >= 0)
+                                        if (valToCompare.IndexOf(txt.Text, StringComparison.OrdinalIgnoreCase) >= 0)
                                             res = true;
                                     }
                                 }
@@ -178,22 +179,24 @@ namespace JALV.Common
                                 }
                             }
                         }
+
                         if (!res)
                             return res;
                     }
                 }
+
                 res = true;
             }
             finally
             {
                 if (OnAfterCheckFilter != null)
                     res = OnAfterCheckFilter(item, res);
-
             }
+
             return res;
         }
 
-        protected object getItemValue(object item, string prop)
+        protected object GetItemValue(object item, string prop)
         {
             object val = null;
             try
@@ -204,10 +207,10 @@ namespace JALV.Common
             {
                 val = null;
             }
+
             return val;
         }
 
         #endregion
     }
-
 }

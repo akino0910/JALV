@@ -7,33 +7,32 @@ namespace JALV.Common
     public class CommandRelay
         : ICommandAncestor
     {
-        readonly protected Func<object, object> _execute;
-        readonly protected Predicate<object> _canExecute;
+        protected readonly Func<object, object> ExecuteFunc;
+        protected readonly Predicate<object> CanExecutePredicate;
 
-        public CommandRelay(Func<object, object> execute, Predicate<object> canExecute)
+        public CommandRelay(Func<object, object> executeFunc, Predicate<object> canExecutePredicate)
         {
-            _execute = execute;
-            _canExecute = canExecute;
+            ExecuteFunc = executeFunc;
+            CanExecutePredicate = canExecutePredicate;
         }
 
         [DebuggerStepThrough]
         public bool CanExecute(object parameter)
         {
-            return _canExecute == null ? true : _canExecute(parameter);
+            return CanExecutePredicate == null ? true : CanExecutePredicate(parameter);
         }
 
         public event EventHandler CanExecuteChanged;
-      
+
         [DebuggerStepThrough]
         public void Execute(object parameter)
         {
-            _execute(parameter);
+            ExecuteFunc(parameter);
         }
 
         public void OnCanExecuteChanged()
         {
-            if (null != CanExecuteChanged)
-                CanExecuteChanged(this, EventArgs.Empty);
+            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }

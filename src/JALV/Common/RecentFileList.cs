@@ -25,12 +25,30 @@ namespace JALV.Common
 
         public IPersist Persister { get; set; }
 
-        public void UseRegistryPersister() { Persister = new RegistryPersister(); }
-        public void UseRegistryPersister(string key) { Persister = new RegistryPersister(key); }
+        public void UseRegistryPersister()
+        {
+            Persister = new RegistryPersister();
+        }
 
-        public void UseXmlPersister() { Persister = new XmlPersister(); }
-        public void UseXmlPersister(string filepath) { Persister = new XmlPersister(filepath); }
-        public void UseXmlPersister(Stream stream) { Persister = new XmlPersister(stream); }
+        public void UseRegistryPersister(string key)
+        {
+            Persister = new RegistryPersister(key);
+        }
+
+        public void UseXmlPersister()
+        {
+            Persister = new XmlPersister();
+        }
+
+        public void UseXmlPersister(string filepath)
+        {
+            Persister = new XmlPersister(filepath);
+        }
+
+        public void UseXmlPersister(Stream stream)
+        {
+            Persister = new XmlPersister(stream);
+        }
 
         public int MaxNumberOfFiles { get; set; }
         public int MaxPathLength { get; set; }
@@ -49,12 +67,13 @@ namespace JALV.Common
         public string MenuItemFormatTenPlus { get; set; }
 
         public delegate string GetMenuItemTextDelegate(int index, string filepath);
+
         public GetMenuItemTextDelegate GetMenuItemTextHandler { get; set; }
 
         public event EventHandler<MenuClickEventArgs> MenuClick;
 
-        Separator _Separator = null;
-        List<RecentFile> _RecentFiles = null;
+        private Separator _separator;
+        private List<RecentFile> _recentFiles;
 
         public RecentFileList()
         {
@@ -65,12 +84,12 @@ namespace JALV.Common
             MenuItemFormatOneToNine = "_{0}:  {2}";
             MenuItemFormatTenPlus = "{0}:  {2}";
 
-            this.Loaded += (s, e) => HookFileMenu();
+            Loaded += (s, e) => HookFileMenu();
         }
 
-        void HookFileMenu()
+        private void HookFileMenu()
         {
-            MenuItem parent = Parent as MenuItem;
+            var parent = Parent as MenuItem;
             if (parent == null) throw new ApplicationException("Parent must be a MenuItem");
 
             if (FileMenu == parent) return;
@@ -81,16 +100,24 @@ namespace JALV.Common
             FileMenu.SubmenuOpened += _FileMenu_SubmenuOpened;
         }
 
-        public List<string> RecentFiles { get { return Persister.RecentFiles(MaxNumberOfFiles); } }
-        public void RemoveFile(string filepath) { Persister.RemoveFile(filepath, MaxNumberOfFiles); }
-        public void InsertFile(string filepath) { Persister.InsertFile(filepath, MaxNumberOfFiles); }
+        public List<string> RecentFiles => Persister.RecentFiles(MaxNumberOfFiles);
 
-        void _FileMenu_SubmenuOpened(object sender, RoutedEventArgs e)
+        public void RemoveFile(string filepath)
+        {
+            Persister.RemoveFile(filepath, MaxNumberOfFiles);
+        }
+
+        public void InsertFile(string filepath)
+        {
+            Persister.InsertFile(filepath, MaxNumberOfFiles);
+        }
+
+        private void _FileMenu_SubmenuOpened(object sender, RoutedEventArgs e)
         {
             SetMenuItems();
         }
 
-        void SetMenuItems()
+        private void SetMenuItems()
         {
             RemoveMenuItems();
 
@@ -99,28 +126,28 @@ namespace JALV.Common
             InsertMenuItems();
         }
 
-        void RemoveMenuItems()
+        private void RemoveMenuItems()
         {
-            if (_Separator != null) FileMenu.Items.Remove(_Separator);
+            if (_separator != null) FileMenu.Items.Remove(_separator);
 
-            if (_RecentFiles != null)
-                foreach (RecentFile r in _RecentFiles)
+            if (_recentFiles != null)
+                foreach (var r in _recentFiles)
                     if (r.MenuItem != null)
                         FileMenu.Items.Remove(r.MenuItem);
 
-            _Separator = null;
-            _RecentFiles = null;
+            _separator = null;
+            _recentFiles = null;
         }
 
-        void InsertMenuItems()
+        private void InsertMenuItems()
         {
-            if (_RecentFiles == null) return;
-            if (_RecentFiles.Count == 0) return;
+            if (_recentFiles == null) return;
+            if (_recentFiles.Count == 0) return;
 
-            int iMenuItem = FileMenu.Items.IndexOf(this);
-            foreach (RecentFile r in _RecentFiles)
+            var iMenuItem = FileMenu.Items.IndexOf(this);
+            foreach (var r in _recentFiles)
             {
-                string header = GetMenuItemText(r.Number + 1, r.Filepath, r.DisplayPath);
+                var header = GetMenuItemText(r.Number + 1, r.Filepath, r.DisplayPath);
 
                 r.MenuItem = new MenuItem { Header = header };
                 r.MenuItem.Click += MenuItem_Click;
@@ -128,20 +155,20 @@ namespace JALV.Common
                 FileMenu.Items.Insert(++iMenuItem, r.MenuItem);
             }
 
-            _Separator = new Separator();
-            FileMenu.Items.Insert(++iMenuItem, _Separator);
+            _separator = new Separator();
+            FileMenu.Items.Insert(++iMenuItem, _separator);
         }
 
-        string GetMenuItemText(int index, string filepath, string displaypath)
+        private string GetMenuItemText(int index, string filepath, string displaypath)
         {
-            GetMenuItemTextDelegate delegateGetMenuItemText = GetMenuItemTextHandler;
+            var delegateGetMenuItemText = GetMenuItemTextHandler;
             if (delegateGetMenuItemText != null) return delegateGetMenuItemText(index, filepath);
 
-            string format = (index < 10 ? MenuItemFormatOneToNine : MenuItemFormatTenPlus);
+            var format = index < 10 ? MenuItemFormatOneToNine : MenuItemFormatTenPlus;
 
-            string shortPath = ShortenPathname(displaypath, MaxPathLength);
+            var shortPath = ShortenPathname(displaypath, MaxPathLength);
 
-            return String.Format(format, index, filepath, shortPath);
+            return string.Format(format, index, filepath, shortPath);
         }
 
         // This method is taken from Joe Woodbury's article at: http://www.codeproject.com/KB/cs/mrutoolstripmenu.aspx
@@ -161,18 +188,19 @@ namespace JALV.Common
         /// (Use Path.GetFullPath() to obtain this.)</para>
         /// </remarks>
         /// <returns></returns>
-        static public string ShortenPathname(string pathname, int maxLength)
+        public static string ShortenPathname(string pathname, int maxLength)
         {
             if (pathname.Length <= maxLength)
                 return pathname;
 
-            string root = Path.GetPathRoot(pathname);
+            var root = Path.GetPathRoot(pathname);
             if (root.Length > 3)
                 root += Path.DirectorySeparatorChar;
 
-            string[] elements = pathname.Substring(root.Length).Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var elements = pathname.Substring(root.Length)
+                .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
-            int filenameIndex = elements.GetLength(0) - 1;
+            var filenameIndex = elements.GetLength(0) - 1;
 
             if (elements.GetLength(0) == 1) // pathname is just a root and filename
             {
@@ -183,21 +211,20 @@ namespace JALV.Common
                     {
                         return root + elements[0].Substring(0, 3) + "...";
                     }
-                    else
-                    {
-                        return pathname.Substring(0, maxLength - 3) + "...";
-                    }
+
+                    return pathname.Substring(0, maxLength - 3) + "...";
                 }
             }
-            else if ((root.Length + 4 + elements[filenameIndex].Length) > maxLength) // pathname is just a root and filename
+            else if (root.Length + 4 + elements[filenameIndex].Length >
+                     maxLength) // pathname is just a root and filename
             {
                 root += "...\\";
 
-                int len = elements[filenameIndex].Length;
+                var len = elements[filenameIndex].Length;
                 if (len < 6)
                     return root + elements[filenameIndex];
 
-                if ((root.Length + 6) >= maxLength)
+                if (root.Length + 6 >= maxLength)
                 {
                     len = 3;
                 }
@@ -205,6 +232,7 @@ namespace JALV.Common
                 {
                     len = maxLength - root.Length - 3;
                 }
+
                 return root + elements[filenameIndex].Substring(0, len) + "...";
             }
             else if (elements.GetLength(0) == 2)
@@ -213,10 +241,10 @@ namespace JALV.Common
             }
             else
             {
-                int len = 0;
-                int begin = 0;
+                var len = 0;
+                var begin = 0;
 
-                for (int i = 0; i < filenameIndex; i++)
+                for (var i = 0; i < filenameIndex; i++)
                 {
                     if (elements[i].Length > len)
                     {
@@ -225,8 +253,8 @@ namespace JALV.Common
                     }
                 }
 
-                int totalLength = pathname.Length - len + 3;
-                int end = begin + 1;
+                var totalLength = pathname.Length - len + 3;
+                var end = begin + 1;
 
                 while (totalLength > maxLength)
                 {
@@ -245,36 +273,37 @@ namespace JALV.Common
 
                 // assemble final string
 
-                for (int i = 0; i < begin; i++)
+                for (var i = 0; i < begin; i++)
                 {
                     root += elements[i] + '\\';
                 }
 
                 root += "...\\";
 
-                for (int i = end; i < filenameIndex; i++)
+                for (var i = end; i < filenameIndex; i++)
                 {
                     root += elements[i] + '\\';
                 }
 
                 return root + elements[filenameIndex];
             }
+
             return pathname;
         }
 
-        void LoadRecentFiles()
+        private void LoadRecentFiles()
         {
-            _RecentFiles = LoadRecentFilesCore();
+            _recentFiles = LoadRecentFilesCore();
         }
 
-        List<RecentFile> LoadRecentFilesCore()
+        private List<RecentFile> LoadRecentFilesCore()
         {
-            List<string> list = RecentFiles;
+            var list = RecentFiles;
 
-            List<RecentFile> files = new List<RecentFile>(list.Count);
+            var files = new List<RecentFile>(list.Count);
 
-            int i = 0;
-            foreach (string filepath in list)
+            var i = 0;
+            foreach (var filepath in list)
                 files.Add(new RecentFile(i++, filepath));
 
             return files;
@@ -282,118 +311,117 @@ namespace JALV.Common
 
         private class RecentFile
         {
-            public int Number = 0;
-            public string Filepath = "";
-            public MenuItem MenuItem = null;
+            public readonly int Number;
+            public readonly string Filepath = "";
+            public MenuItem MenuItem;
 
-            public string DisplayPath
-            {
-                get
-                {
-                    return Path.Combine(
-                        Path.GetDirectoryName(Filepath),
-                        Path.GetFileNameWithoutExtension(Filepath));
-                }
-            }
+            public string DisplayPath =>
+                Path.Combine(
+                    Path.GetDirectoryName(Filepath),
+                    Path.GetFileNameWithoutExtension(Filepath));
 
             public RecentFile(int number, string filepath)
             {
-                this.Number = number;
-                this.Filepath = filepath;
+                Number = number;
+                Filepath = filepath;
             }
         }
 
         public class MenuClickEventArgs : EventArgs
         {
-            public string Filepath { get; private set; }
+            public string Filepath { get; }
 
             public MenuClickEventArgs(string filepath)
             {
-                this.Filepath = filepath;
+                Filepath = filepath;
             }
         }
 
-        void MenuItem_Click(object sender, EventArgs e)
+        private void MenuItem_Click(object sender, EventArgs e)
         {
-            MenuItem menuItem = sender as MenuItem;
+            var menuItem = sender as MenuItem;
 
             OnMenuClick(menuItem);
         }
 
         protected virtual void OnMenuClick(MenuItem menuItem)
         {
-            string filepath = GetFilepath(menuItem);
+            var filepath = GetFilepath(menuItem);
 
-            if (String.IsNullOrEmpty(filepath)) return;
+            if (string.IsNullOrEmpty(filepath)) return;
 
-            EventHandler<MenuClickEventArgs> dMenuClick = MenuClick;
-            if (dMenuClick != null) dMenuClick(menuItem, new MenuClickEventArgs(filepath));
+            var dMenuClick = MenuClick;
+            dMenuClick?.Invoke(menuItem, new MenuClickEventArgs(filepath));
         }
 
-        string GetFilepath(MenuItem menuItem)
+        private string GetFilepath(MenuItem menuItem)
         {
-            foreach (RecentFile r in _RecentFiles)
+            foreach (var r in _recentFiles)
                 if (r.MenuItem == menuItem)
                     return r.Filepath;
 
-            return String.Empty;
+            return string.Empty;
         }
 
         //-----------------------------------------------------------------------------------------
 
-        static class ApplicationAttributes
+        private static class ApplicationAttributes
         {
-            static readonly Assembly _Assembly = null;
+            private static readonly Assembly Assembly;
 
-            static readonly AssemblyTitleAttribute _Title = null;
-            static readonly AssemblyCompanyAttribute _Company = null;
-            static readonly AssemblyCopyrightAttribute _Copyright = null;
-            static readonly AssemblyProductAttribute _Product = null;
+            private static readonly AssemblyTitleAttribute TitleAttribute;
+            private static readonly AssemblyCompanyAttribute CompanyAttribute;
+            private static readonly AssemblyCopyrightAttribute CopyrightAttribute;
+            private static readonly AssemblyProductAttribute ProductAttribute;
 
-            public static string Title { get; private set; }
-            public static string CompanyName { get; private set; }
-            public static string Copyright { get; private set; }
-            public static string ProductName { get; private set; }
+            public static string Title { get; }
+            public static string CompanyName { get; }
+            public static string Copyright { get; }
+            public static string ProductName { get; }
 
-            static Version _Version = null;
-            public static string Version { get; private set; }
+            private static readonly Version Version;
 
             static ApplicationAttributes()
             {
                 try
                 {
-                    Title = String.Empty;
-                    CompanyName = String.Empty;
-                    Copyright = String.Empty;
-                    ProductName = String.Empty;
-                    Version = String.Empty;
+                    Title = string.Empty;
+                    CompanyName = string.Empty;
+                    Copyright = string.Empty;
+                    ProductName = string.Empty;
 
-                    _Assembly = Assembly.GetEntryAssembly();
+                    Assembly = Assembly.GetEntryAssembly();
 
-                    if (_Assembly != null)
+                    if (Assembly != null)
                     {
-                        object[] attributes = _Assembly.GetCustomAttributes(false);
+                        var attributes = Assembly.GetCustomAttributes(false);
 
-                        foreach (object attribute in attributes)
+                        foreach (var attribute in attributes)
                         {
-                            Type type = attribute.GetType();
+                            var type = attribute.GetType();
 
-                            if (type == typeof(AssemblyTitleAttribute)) _Title = (AssemblyTitleAttribute)attribute;
-                            if (type == typeof(AssemblyCompanyAttribute)) _Company = (AssemblyCompanyAttribute)attribute;
-                            if (type == typeof(AssemblyCopyrightAttribute)) _Copyright = (AssemblyCopyrightAttribute)attribute;
-                            if (type == typeof(AssemblyProductAttribute)) _Product = (AssemblyProductAttribute)attribute;
+                            if (type == typeof(AssemblyTitleAttribute)) TitleAttribute = (AssemblyTitleAttribute)attribute;
+                            if (type == typeof(AssemblyCompanyAttribute))
+                                CompanyAttribute = (AssemblyCompanyAttribute)attribute;
+                            if (type == typeof(AssemblyCopyrightAttribute))
+                                CopyrightAttribute = (AssemblyCopyrightAttribute)attribute;
+                            if (type == typeof(AssemblyProductAttribute))
+                                ProductAttribute = (AssemblyProductAttribute)attribute;
                         }
 
-                        _Version = _Assembly.GetName().Version;
+                        Version = Assembly.GetName().Version;
                     }
 
-                    if (_Title != null) Title = _Title.Title;
-                    if (_Company != null) CompanyName = _Company.Company;
-                    if (_Copyright != null) Copyright = _Copyright.Copyright;
-                    if (_Product != null) ProductName = _Product.Product;
-                    if (_Version != null) Version = _Version.ToString();
+                    if (TitleAttribute != null) Title = TitleAttribute.Title;
+                    if (CompanyAttribute != null) CompanyName = CompanyAttribute.Company;
+                    if (CopyrightAttribute != null) Copyright = CopyrightAttribute.Copyright;
+                    if (ProductAttribute != null) ProductName = ProductAttribute.Product;
+                    if (Version != null) Version.ToString();
                 }
-                catch { }
+                catch(Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
             }
         }
 
@@ -401,7 +429,7 @@ namespace JALV.Common
 
         private class RegistryPersister : IPersist
         {
-            public string RegistryKey { get; set; }
+            public string RegistryKey { get; }
 
             public RegistryPersister()
             {
@@ -417,20 +445,22 @@ namespace JALV.Common
                 RegistryKey = key;
             }
 
-            string Key(int i) { return i.ToString("00"); }
+            private string Key(int i)
+            {
+                return i.ToString("00");
+            }
 
             public List<string> RecentFiles(int max)
             {
-                RegistryKey k = Registry.CurrentUser.OpenSubKey(RegistryKey);
-                if (k == null) k = Registry.CurrentUser.CreateSubKey(RegistryKey);
+                var k = Registry.CurrentUser.OpenSubKey(RegistryKey) ?? Registry.CurrentUser.CreateSubKey(RegistryKey);
 
-                List<string> list = new List<string>(max);
+                var list = new List<string>(max);
 
-                for (int i = 0; i < max; i++)
+                for (var i = 0; i < max; i++)
                 {
-                    string filename = (string)k.GetValue(Key(i));
+                    var filename = (string)k.GetValue(Key(i));
 
-                    if (String.IsNullOrEmpty(filename)) break;
+                    if (string.IsNullOrEmpty(filename)) break;
 
                     list.Add(filename);
                 }
@@ -440,18 +470,18 @@ namespace JALV.Common
 
             public void InsertFile(string filepath, int max)
             {
-                RegistryKey k = Registry.CurrentUser.OpenSubKey(RegistryKey);
+                var k = Registry.CurrentUser.OpenSubKey(RegistryKey);
                 if (k == null) Registry.CurrentUser.CreateSubKey(RegistryKey);
                 k = Registry.CurrentUser.OpenSubKey(RegistryKey, true);
 
                 RemoveFile(filepath, max);
 
-                for (int i = max - 2; i >= 0; i--)
+                for (var i = max - 2; i >= 0; i--)
                 {
-                    string sThis = Key(i);
-                    string sNext = Key(i + 1);
+                    var sThis = Key(i);
+                    var sNext = Key(i + 1);
 
-                    object oThis = k.GetValue(sThis);
+                    var oThis = k.GetValue(sThis);
                     if (oThis == null) continue;
 
                     k.SetValue(sNext, oThis);
@@ -462,13 +492,13 @@ namespace JALV.Common
 
             public void RemoveFile(string filepath, int max)
             {
-                RegistryKey k = Registry.CurrentUser.OpenSubKey(RegistryKey);
+                var k = Registry.CurrentUser.OpenSubKey(RegistryKey);
                 if (k == null) return;
 
-                for (int i = 0; i < max; i++)
+                for (var i = 0; i < max; i++)
                 {
-                again:
-                    string s = (string)k.GetValue(Key(i));
+                    again:
+                    var s = (string)k.GetValue(Key(i));
                     if (s != null && s.Equals(filepath, StringComparison.CurrentCultureIgnoreCase))
                     {
                         RemoveFile(i, max);
@@ -477,19 +507,19 @@ namespace JALV.Common
                 }
             }
 
-            void RemoveFile(int index, int max)
+            private void RemoveFile(int index, int max)
             {
-                RegistryKey k = Registry.CurrentUser.OpenSubKey(RegistryKey, true);
+                var k = Registry.CurrentUser.OpenSubKey(RegistryKey, true);
                 if (k == null) return;
 
                 k.DeleteValue(Key(index), false);
 
-                for (int i = index; i < max - 1; i++)
+                for (var i = index; i < max - 1; i++)
                 {
-                    string sThis = Key(i);
-                    string sNext = Key(i + 1);
+                    var sThis = Key(i);
+                    var sNext = Key(i + 1);
 
-                    object oNext = k.GetValue(sNext);
+                    var oNext = k.GetValue(sNext);
                     if (oNext == null) break;
 
                     k.SetValue(sThis, oNext);
@@ -502,8 +532,8 @@ namespace JALV.Common
 
         private class XmlPersister : IPersist
         {
-            public string Filepath { get; set; }
-            public Stream Stream { get; set; }
+            public string Filepath { get; }
+            public Stream Stream { get; }
 
             public XmlPersister()
             {
@@ -540,11 +570,11 @@ namespace JALV.Common
                 Update(filepath, false, max);
             }
 
-            void Update(string filepath, bool insert, int max)
+            private void Update(string filepath, bool insert, int max)
             {
-                List<string> old = Load(max);
+                var old = Load(max);
 
-                List<string> list = new List<string>(old.Count + 1);
+                var list = new List<string>(old.Count + 1);
 
                 if (insert) list.Add(filepath);
 
@@ -553,75 +583,75 @@ namespace JALV.Common
                 Save(list, max);
             }
 
-            void CopyExcluding(List<string> source, string exclude, List<string> target, int max)
+            private void CopyExcluding(List<string> source, string exclude, List<string> target, int max)
             {
-                foreach (string s in source)
-                    if (!String.IsNullOrEmpty(s))
+                foreach (var s in source)
+                    if (!string.IsNullOrEmpty(s))
                         if (!s.Equals(exclude, StringComparison.OrdinalIgnoreCase))
                             if (target.Count < max)
                                 target.Add(s);
             }
 
-            class SmartStream : IDisposable
+            private class SmartStream : IDisposable
             {
-                bool _IsStreamOwned = true;
-                Stream _Stream = null;
+                private readonly bool _isStreamOwned = true;
 
-                public Stream Stream { get { return _Stream; } }
+                public Stream Stream { get; private set; }
 
-                public static implicit operator Stream(SmartStream me) { return me.Stream; }
+                public static implicit operator Stream(SmartStream me)
+                {
+                    return me.Stream;
+                }
 
                 public SmartStream(string filepath, FileMode mode)
                 {
-                    _IsStreamOwned = true;
+                    _isStreamOwned = true;
 
                     Directory.CreateDirectory(Path.GetDirectoryName(filepath));
 
-                    _Stream = File.Open(filepath, mode);
+                    Stream = File.Open(filepath, mode);
                 }
 
                 public SmartStream(Stream stream)
                 {
-                    _IsStreamOwned = false;
-                    _Stream = stream;
+                    _isStreamOwned = false;
+                    Stream = stream;
                 }
 
                 public void Dispose()
                 {
-                    if (_IsStreamOwned && _Stream != null) _Stream.Dispose();
+                    if (_isStreamOwned && Stream != null) Stream.Dispose();
 
-                    _Stream = null;
+                    Stream = null;
                 }
             }
 
-            SmartStream OpenStream(FileMode mode)
+            private SmartStream OpenStream(FileMode mode)
             {
-                if (!String.IsNullOrEmpty(Filepath))
+                if (!string.IsNullOrEmpty(Filepath))
                 {
                     return new SmartStream(Filepath, mode);
                 }
-                else
-                {
-                    return new SmartStream(Stream);
-                }
+
+                return new SmartStream(Stream);
             }
 
-            List<string> Load(int max)
+            private List<string> Load(int max)
             {
-                List<string> list = new List<string>(max);
+                var list = new List<string>(max);
 
-                using (MemoryStream ms = new MemoryStream())
+                using (var ms = new MemoryStream())
                 {
-                    using (SmartStream ss = OpenStream(FileMode.OpenOrCreate))
+                    using (var ss = OpenStream(FileMode.OpenOrCreate))
                     {
                         if (ss.Stream.Length == 0) return list;
 
                         ss.Stream.Position = 0;
 
-                        byte[] buffer = new byte[1 << 20];
-                        for (; ; )
+                        var buffer = new byte[1 << 20];
+                        for (;;)
                         {
-                            int bytes = ss.Stream.Read(buffer, 0, buffer.Length);
+                            var bytes = ss.Stream.Read(buffer, 0, buffer.Length);
                             if (bytes == 0) break;
                             ms.Write(buffer, 0, bytes);
                         }
@@ -652,16 +682,22 @@ namespace JALV.Common
                                             if (list.Count < max) list.Add(x.GetAttribute(0));
                                             break;
 
-                                        default: Debug.Assert(false); break;
+                                        default:
+                                            Debug.Assert(false);
+                                            break;
                                     }
+
                                     break;
 
                                 case XmlNodeType.EndElement:
                                     switch (x.Name)
                                     {
                                         case "RecentFiles": return list;
-                                        default: Debug.Assert(false); break;
+                                        default:
+                                            Debug.Assert(false);
+                                            break;
                                     }
+
                                     break;
 
                                 default:
@@ -672,22 +708,27 @@ namespace JALV.Common
                     }
                     finally
                     {
-                        if (x != null) x.Close();
+                        x?.Close();
                     }
                 }
+
                 return list;
             }
 
-            void Save(List<string> list, int max)
+            private void Save(List<string> list, int max)
             {
-                using (MemoryStream ms = new MemoryStream())
+                using (var ms = new MemoryStream())
                 {
                     XmlTextWriter x = null;
 
                     try
                     {
                         x = new XmlTextWriter(ms, Encoding.UTF8);
-                        if (x == null) { Debug.Assert(false); return; }
+                        if (x == null)
+                        {
+                            Debug.Assert(false);
+                            return;
+                        }
 
                         x.Formatting = Formatting.Indented;
 
@@ -695,7 +736,7 @@ namespace JALV.Common
 
                         x.WriteStartElement("RecentFiles");
 
-                        foreach (string filepath in list)
+                        foreach (var filepath in list)
                         {
                             x.WriteStartElement("RecentFile");
                             x.WriteAttributeString("Filepath", filepath);
@@ -708,16 +749,16 @@ namespace JALV.Common
 
                         x.Flush();
 
-                        using (SmartStream ss = OpenStream(FileMode.Create))
+                        using (var ss = OpenStream(FileMode.Create))
                         {
                             ss.Stream.SetLength(0);
 
                             ms.Position = 0;
 
-                            byte[] buffer = new byte[1 << 20];
-                            for (; ; )
+                            var buffer = new byte[1 << 20];
+                            for (;;)
                             {
-                                int bytes = ms.Read(buffer, 0, buffer.Length);
+                                var bytes = ms.Read(buffer, 0, buffer.Length);
                                 if (bytes == 0) break;
                                 ss.Stream.Write(buffer, 0, bytes);
                             }
@@ -725,13 +766,12 @@ namespace JALV.Common
                     }
                     finally
                     {
-                        if (x != null) x.Close();
+                        x?.Close();
                     }
                 }
             }
         }
 
         //-----------------------------------------------------------------------------------------
-
     }
 }

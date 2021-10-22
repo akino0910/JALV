@@ -19,11 +19,12 @@ namespace JALV.Common.Converters
             double coord = 0;
             double.TryParse(value.ToString(), out coord);
 
-            double res = coord + adjust;
+            var res = coord + adjust;
             return res >= 0 ? res : coord;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter,
+            System.Globalization.CultureInfo culture)
         {
             return value;
         }
