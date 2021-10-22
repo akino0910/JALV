@@ -53,7 +53,7 @@ namespace JALV.Core.Providers
                     RequestId = lineObject.SelectToken("requestId")?.Value<String>() ?? "",
                     Thread = lineObject.SelectToken("thread")?.Value<String>() ?? "",
                     UserName = lineObject.SelectToken("user")?.Value<String>() ?? "",
-                    MachineName = lineObject.SelectToken("machine")?.Value<String>() ?? "",
+                    MachineName = lineObject.SelectToken("machinename")?.Value<String>() ?? "",
                     HostName = lineObject.SelectToken("hostname")?.Value<String>() ?? "",
                     Throwable = lineObject.SelectToken("exception")?.Value<String>() ?? "",
                     Class = lineObject.SelectToken("logger")?.Value<String>() ?? "",
