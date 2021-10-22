@@ -44,8 +44,10 @@ namespace JALV.Common
             {
                 foreach (var item in columns)
                 {
-                    var col = new DataGridTextColumn();
-                    col.Header = item.Header;
+                    var col = new DataGridTextColumn
+                    {
+                        Header = item.Header
+                    };
                     if (item.Alignment == CellAlignment.Center && _centerCellStyle != null)
                         col.CellStyle = _centerCellStyle;
                     if (item.MinWidth != null)
@@ -53,8 +55,11 @@ namespace JALV.Common
                     if (item.Width != null)
                         col.Width = item.Width.Value;
 
-                    var bind = new Binding(item.Field) { Mode = BindingMode.OneWay };
-                    bind.ConverterCulture = CultureInfo.GetCultureInfo(Resources.CultureName);
+                    var bind = new Binding(item.Field)
+                    {
+                        Mode = BindingMode.OneWay,
+                        ConverterCulture = CultureInfo.GetCultureInfo(Resources.CultureName)
+                    };
                     if (!string.IsNullOrWhiteSpace(item.StringFormat))
                         bind.StringFormat = item.StringFormat;
                     col.Binding = bind;

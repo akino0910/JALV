@@ -986,7 +986,7 @@ namespace JALV.ViewModel
 
                 var idGoTo = 0;
                 int.TryParse(value, out idGoTo);
-                var currentId = SelectedLogItem != null ? SelectedLogItem.Id : 0;
+                var currentId = SelectedLogItem?.Id ?? 0;
 
                 if (idGoTo > 0 && idGoTo != currentId)
                 {
@@ -1216,13 +1216,15 @@ namespace JALV.ViewModel
                 {
                     try
                     {
-                        var myJumpTask = new JumpTask();
-                        myJumpTask.CustomCategory = Resources.MainWindowVM_updateJumpList_CustomCategoryName;
-                        myJumpTask.Title = Path.GetFileName(item);
-                        //myJumpTask.Description = "";
-                        myJumpTask.ApplicationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
-                            AppDomain.CurrentDomain.FriendlyName);
-                        myJumpTask.Arguments = item;
+                        var myJumpTask = new JumpTask
+                        {
+                            CustomCategory = Resources.MainWindowVM_updateJumpList_CustomCategoryName,
+                            Title = Path.GetFileName(item),
+                            //myJumpTask.Description = "";
+                            ApplicationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                                AppDomain.CurrentDomain.FriendlyName),
+                            Arguments = item
+                        };
                         myJumpList.JumpItems.Add(myJumpTask);
                     }
                     catch (Exception)
@@ -1372,7 +1374,7 @@ namespace JALV.ViewModel
                             where LevelCheckFilter(it)
                             select it).LastOrDefault();
 
-                        SelectedLogItem = lastItem != null ? lastItem : Items[Items.Count - 1];
+                        SelectedLogItem = lastItem ?? Items[Items.Count - 1];
                     }
                 }
             }

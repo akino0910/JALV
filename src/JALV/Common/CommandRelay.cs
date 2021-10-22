@@ -19,7 +19,7 @@ namespace JALV.Common
         [DebuggerStepThrough]
         public bool CanExecute(object parameter)
         {
-            return CanExecutePredicate == null ? true : CanExecutePredicate(parameter);
+            return CanExecutePredicate?.Invoke(parameter) ?? true;
         }
 
         public event EventHandler CanExecuteChanged;
