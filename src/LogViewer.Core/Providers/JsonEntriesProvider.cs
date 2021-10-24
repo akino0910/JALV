@@ -1,26 +1,29 @@
-﻿using System;
+﻿using LogViewer.Core.Domain;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using LogViewer.Core.Domain;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace LogViewer.Core.Providers
 {
     internal class JsonEntriesProvider : AbstractEntriesProvider
     {
+        private readonly CultureInfo _cultureInfo = new CultureInfo("en-US");
+
+        private readonly JsonSerializerSettings _jsonSerializerSettings = new JsonSerializerSettings
+        {
+            DateParseHandling = DateParseHandling.None
+        };
+
         public override IEnumerable<LogItem> GetEntries(string dataSource, FilterParams filter)
         {
             var entryId = 1;
 
-            var fs = new FileStream(dataSource, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            var sr = new StreamReader(fs);
-
-            while (!sr.EndOfStream)
+            foreach (var line in File.ReadLines(dataSource))
             {
-                var line = sr.ReadLine();
-                var lineObject = JsonConvert.DeserializeObject<JObject>(line);
+                var lineObject = JsonConvert.DeserializeObject<JObject>(line, _jsonSerializerSettings);
 
                 string[] dateFormats =
                 {
@@ -30,17 +33,10 @@ namespace LogViewer.Core.Providers
                     "yyyy-MM-ddTHH:mm:ss,fffZ", "yyyy-MM-dd HH:mm:ss,fffZ",
                     "yyyy-MM-dd HH:mm:ss.fff", "yyyy-MM-dd HH:mm:ss,fff"
                 };
+
                 var dateString = lineObject?.SelectToken("date")?.Value<string>() ?? "";
-                DateTime timestamp;
-                try
-                {
-                    timestamp = DateTime.ParseExact(dateString, dateFormats, new CultureInfo("en-US"),
-                        DateTimeStyles.None);
-                }
-                catch (FormatException)
-                {
-                    timestamp = new DateTime();
-                }
+
+                DateTime.TryParseExact(dateString, dateFormats, _cultureInfo, DateTimeStyles.None, out var timestamp);
 
                 var entry = new LogItem
                 {
